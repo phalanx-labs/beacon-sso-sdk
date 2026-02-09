@@ -2,9 +2,12 @@ module github.com/phalanx/beacon-sso-sdk
 
 go 1.25.3
 
+replace github.com/bamboo-services/bamboo-base-go v1.0.0-202602051602 => /Users/xiaolfeng/ProgramProjects/Cooperate/bamboo-service/bamboo-base
+
 require (
-	github.com/bamboo-services/bamboo-base-go v1.0.0-202601220035
+	github.com/bamboo-services/bamboo-base-go v1.0.0-202602051602
 	github.com/gin-gonic/gin v1.11.0
+	github.com/go-resty/resty/v2 v2.17.1
 	github.com/redis/go-redis/v9 v9.14.0
 	golang.org/x/oauth2 v0.34.0
 	gorm.io/gorm v1.31.1
@@ -22,9 +25,9 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.30.1 // indirect
-	github.com/go-resty/resty/v2 v2.17.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
