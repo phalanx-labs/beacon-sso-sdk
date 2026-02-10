@@ -57,9 +57,11 @@ func main() {
 - `SSO_ENDPOINT_AUTH_URI`
 - `SSO_ENDPOINT_TOKEN_URI`
 - `SSO_ENDPOINT_USERINFO_URI`
+- `SSO_ENDPOINT_INTROSPECTION_URI`
+- `SSO_ENDPOINT_REVOCATION_URI`
 
 可选：
-- `SSO_WELL_KNOWN_URI`（自动发现端点）
+- `SSO_WELL_KNOWN_URI`（自动发现端点，支持 authorization/token/userinfo/introspection/revocation）
 
 ## 项目结构
 - `handler/`: OAuth 回调处理器

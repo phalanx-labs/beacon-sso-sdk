@@ -2,13 +2,18 @@ package bSdkLogic
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 
+	xEnv "github.com/bamboo-services/bamboo-base-go/env"
 	xError "github.com/bamboo-services/bamboo-base-go/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
 	xUtil "github.com/bamboo-services/bamboo-base-go/utility"
 	"github.com/gin-gonic/gin"
+	"github.com/go-resty/resty/v2"
+	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
 	bSdkModels "github.com/phalanx/beacon-sso-sdk/models"
 	bSdkRepo "github.com/phalanx/beacon-sso-sdk/repository"
 	bSdkUtil "github.com/phalanx/beacon-sso-sdk/utility"
@@ -260,4 +265,66 @@ func (l *OAuthLogic) VerifyExpiry(ctx *gin.Context, accessToken string) (bool, *
 		return false, xError.NewError(ctx, xError.OperationFailed, "解析令牌过期时间失败", false, timeErr)
 	}
 	return parseTime.Before(time.Now()), nil
+}
+
+// Logout 调用 OAuth2 Revocation Endpoint 注销指定令牌。
+//
+// 该方法会把指定 token 发送到 revocation endpoint 完成远端注销，
+// 并尝试清理本地缓存中的 access token。缓存清理失败仅记录告警，不阻断主流程。
+func (l *OAuthLogic) Logout(ctx *gin.Context, tokenType string, token string) *xError.Error {
+	l.log.Info(ctx, "OAuthLogic|Logout - 注销令牌")
+
+	if tokenType == "" {
+		return xError.NewError(ctx, xError.ParameterEmpty, "令牌类型为空", false, nil)
+	}
+	if token == "" {
+		return xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
+	}
+
+	revocationURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointRevocationURI, "")
+	if revocationURI == "" {
+		return xError.NewError(ctx, xError.OperationFailed, "注销端点为空", false, nil)
+	}
+
+	clientID := xEnv.GetEnvString(bSdkConst.EnvSsoClientID, "")
+	clientSecret := xEnv.GetEnvString(bSdkConst.EnvSsoClientSecret, "")
+	if clientID == "" || clientSecret == "" {
+		return xError.NewError(ctx, xError.OperationFailed, "客户端配置缺失", false, nil)
+	}
+
+	client := resty.New()
+	resp, reqErr := client.R().
+		SetContext(ctx).
+		SetHeader("Accept", "application/json").
+		SetHeader("Content-Type", "application/x-www-form-urlencoded").
+		SetBasicAuth(clientID, clientSecret).
+		SetFormData(map[string]string{
+			"token":           token,
+			"token_type_hint": tokenType,
+		}).
+		Post(revocationURI)
+	if reqErr != nil {
+		return xError.NewError(ctx, xError.OperationFailed, "注销令牌失败", false, reqErr)
+	}
+
+	if resp.StatusCode() != http.StatusOK && resp.StatusCode() != http.StatusNoContent {
+		return xError.NewError(
+			ctx,
+			xError.OperationFailed,
+			xError.ErrMessage(fmt.Sprintf("注销令牌失败，状态码: %d", resp.StatusCode())),
+			false,
+			nil,
+		)
+	}
+
+	if l.rdb != nil {
+		if delErr := l.tokenData.Delete(ctx, token); delErr != nil {
+			l.log.Warn(ctx, "OAuthLogic|Logout - 清理令牌缓存失败",
+				slog.String("token", token),
+				slog.String("error", delErr.Error()),
+			)
+		}
+	}
+
+	return nil
 }

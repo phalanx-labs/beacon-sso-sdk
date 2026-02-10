@@ -98,3 +98,34 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 
 	xResult.SuccessHasData(ctx, "登录成功", getToken)
 }
+
+// Logout 处理 OAuth2 登出请求。
+//
+// 该处理器会根据请求头中的令牌调用 revocation endpoint 进行注销。
+// 默认注销 access token；当 query 参数 token_type=refresh_token 时注销刷新令牌。
+func (h *AuthHandler) Logout(ctx *gin.Context) {
+	h.log.Info(ctx, "AuthHandler|Logout - 处理登出请求")
+
+	tokenType := ctx.DefaultQuery("token_type", "access_token")
+	var token string
+	switch tokenType {
+	case "refresh_token":
+		token = xHttp.GetToken(ctx, xHttp.HeaderRefreshToken)
+	default:
+		tokenType = "access_token"
+		token = xHttp.GetToken(ctx, xHttp.HeaderAccessToken)
+	}
+
+	if token == "" {
+		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要令牌参数", false, nil))
+		return
+	}
+
+	xErr := h.service.oauthLogic.Logout(ctx, tokenType, token)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.Success(ctx, "登出成功")
+}

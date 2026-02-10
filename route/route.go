@@ -24,4 +24,5 @@ func (r *Route) OAuthRouter(route *gin.RouterGroup) {
 
 	group.GET("/login", authHandler.Login)
 	group.GET("/callback", authHandler.Callback)
+	group.POST("/logout", authHandler.Logout)
 }

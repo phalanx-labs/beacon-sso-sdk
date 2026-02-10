@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	xEnv "github.com/bamboo-services/bamboo-base-go/env"
 	xError "github.com/bamboo-services/bamboo-base-go/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
+	xUtil "github.com/bamboo-services/bamboo-base-go/utility"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
@@ -103,4 +105,82 @@ func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkMod
 	}
 
 	return userinfo, nil
+}
+
+// Introspection 调用 OAuth2 Introspection Endpoint 查询令牌状态与有效期。
+func (l *BusinessLogic) Introspection(ctx *gin.Context, tokenType string, token string) (*bSdkModels.OAuthIntrospection, *xError.Error) {
+	l.log.Info(ctx, "BusinessLogic|Introspection - 查询令牌有效期")
+
+	if tokenType == "" {
+		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌类型为空", false, nil)
+	}
+	if token == "" {
+		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
+	}
+
+	introspectionURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointIntrospectionURI, "")
+	if introspectionURI == "" {
+		return nil, xError.NewError(ctx, xError.OperationFailed, "自省端点为空", false, nil)
+	}
+
+	clientID := xEnv.GetEnvString(bSdkConst.EnvSsoClientID, "")
+	clientSecret := xEnv.GetEnvString(bSdkConst.EnvSsoClientSecret, "")
+	if clientID == "" || clientSecret == "" {
+		return nil, xError.NewError(ctx, xError.OperationFailed, "客户端配置缺失", false, nil)
+	}
+
+	client := resty.New()
+	resp, reqErr := client.R().
+		SetContext(ctx).
+		SetHeader("Accept", "application/json").
+		SetHeader("Content-Type", "application/x-www-form-urlencoded").
+		SetBasicAuth(clientID, clientSecret).
+		SetFormData(map[string]string{
+			"token":           token,
+			"token_type_hint": tokenType,
+		}).
+		Post(introspectionURI)
+	if reqErr != nil {
+		return nil, xError.NewError(ctx, xError.OperationFailed, "查询令牌状态失败", false, reqErr)
+	}
+	if resp.StatusCode() != http.StatusOK {
+		return nil, xError.NewError(
+			ctx,
+			xError.OperationFailed,
+			xError.ErrMessage(fmt.Sprintf("查询令牌状态失败，状态码: %d", resp.StatusCode())),
+			false,
+			nil,
+		)
+	}
+
+	raw := make(map[string]any)
+	if err := json.Unmarshal(resp.Body(), &raw); err != nil {
+		return nil, xError.NewError(ctx, xError.OperationFailed, "解析令牌状态失败", false, err)
+	}
+
+	result := &bSdkModels.OAuthIntrospection{Raw: raw}
+	if active, ok := raw["active"].(bool); ok {
+		result.Active = active
+	}
+	if value, ok := raw["token_type"].(string); ok {
+		result.TokenType = value
+	}
+
+	expUnix, ok := xUtil.Parse().ParseInt64(raw["exp"])
+	if ok {
+		result.Exp = expUnix
+		expiry := time.Unix(expUnix, 0)
+		result.Expiry = expiry.Format(time.RFC3339)
+
+		expiresIn := int64(time.Until(expiry).Seconds())
+		if expiresIn < 0 {
+			expiresIn = 0
+			result.IsExpired = true
+		} else {
+			result.IsExpired = false
+		}
+		result.ExpiresIn = expiresIn
+	}
+
+	return result, nil
 }

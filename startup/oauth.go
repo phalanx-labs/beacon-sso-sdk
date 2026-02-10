@@ -36,7 +36,7 @@ func NewOAuthConfig() []xRegNode.RegNodeList {
 //
 // 配置加载逻辑优先级：
 //  1. 如果设置了 `SSO_WELL_KNOWN_URI` 环境变量，函数将发起 HTTP GET 请求获取
-//     OpenID Connect 的元数据，从而自动解析 Authorization、Token 和 Userinfo 端点。
+//     OpenID Connect 的元数据，从而自动解析 Authorization、Token、Userinfo、Introspection 与 Revocation 端点。
 //  2. 否则，将尝试从 `SSO_ENDPOINT_*` 相关的环境变量读取端点地址。
 //
 // 函数会校验必要的配置（如 ClientID, Secret, RedirectURL 等），如果缺失则会触发 Panic。
@@ -57,9 +57,11 @@ func oAuthConfig() xRegNode.RegNodeList {
 			xLog.WithName(xLog.NamedINIT).Info(ctx, "初始化 OAuth 配置")
 
 			var (
-				wkAuthURI     string // well-known 登录端点
-				wkTokenURI    string // well-known 令牌端点
-				wkUserinfoURI string // well-known 获取用户信息端点
+				wkAuthURI          string // well-known 登录端点
+				wkTokenURI         string // well-known 令牌端点
+				wkUserinfoURI      string // well-known 获取用户信息端点
+				wkIntrospectionURI string // well-known 令牌自省端点
+				wkRevocationURI    string // well-known 令牌注销端点
 			)
 			if getWellKnown := xEnv.GetEnvString(bSdkConst.EnvSsoWellKnownURI, ""); getWellKnown != "" {
 				log := xLog.WithName(xLog.NamedINIT)
@@ -80,9 +82,11 @@ func oAuthConfig() xRegNode.RegNodeList {
 					return nil, fmt.Errorf("SSO_WELL_KNOWN_URI 返回非成功状态码: %d", resp.StatusCode())
 				}
 
-				wkAuthURI = wellKnown["authorization_endpoint"].(string)
-				wkTokenURI = wellKnown["token_endpoint"].(string)
-				wkUserinfoURI = wellKnown["userinfo_endpoint"].(string)
+				wkAuthURI = readWellKnownURI(wellKnown, "authorization_endpoint")
+				wkTokenURI = readWellKnownURI(wellKnown, "token_endpoint")
+				wkUserinfoURI = readWellKnownURI(wellKnown, "userinfo_endpoint")
+				wkIntrospectionURI = readWellKnownURI(wellKnown, "introspection_endpoint")
+				wkRevocationURI = readWellKnownURI(wellKnown, "revocation_endpoint")
 			}
 
 			// 获取环境变量
@@ -92,8 +96,10 @@ func oAuthConfig() xRegNode.RegNodeList {
 			authURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointAuthURI, wkAuthURI)
 			tokenURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointTokenURI, wkTokenURI)
 			userinfoURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointUserinfoURI, wkUserinfoURI)
+			introspectionURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointIntrospectionURI, wkIntrospectionURI)
+			revocationURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointRevocationURI, wkRevocationURI)
 
-			if clientID == "" || clientSecret == "" || clientRedirectURI == "" || authURI == "" || tokenURI == "" || userinfoURI == "" {
+			if clientID == "" || clientSecret == "" || clientRedirectURI == "" || authURI == "" || tokenURI == "" || userinfoURI == "" || introspectionURI == "" || revocationURI == "" {
 				xLog.Panic(ctx, "SSO 客户端配置缺失",
 					slog.String("client_id", clientID),
 					slog.String("client_secret", clientSecret),
@@ -101,6 +107,8 @@ func oAuthConfig() xRegNode.RegNodeList {
 					slog.String("auth_uri", authURI),
 					slog.String("token_uri", tokenURI),
 					slog.String("userinfo_uri", userinfoURI),
+					slog.String("introspection_uri", introspectionURI),
+					slog.String("revocation_uri", revocationURI),
 				)
 			}
 
@@ -116,10 +124,17 @@ func oAuthConfig() xRegNode.RegNodeList {
 				},
 			}
 
-			// 同时设置环境变量，供其他节点使用
-			envErr := xEnv.SetEnv(bSdkConst.EnvSsoEndpointUserinfoURI, userinfoURI)
-			envErr = xEnv.SetEnv(bSdkConst.EnvSsoRedirectURI, clientRedirectURI)
-			if envErr != nil {
+			// 同时设置环境变量，供其他逻辑层使用
+			if envErr := xEnv.SetEnv(bSdkConst.EnvSsoEndpointUserinfoURI, userinfoURI); envErr != nil {
+				return nil, fmt.Errorf("设置环境变量失败: %v", envErr)
+			}
+			if envErr := xEnv.SetEnv(bSdkConst.EnvSsoEndpointIntrospectionURI, introspectionURI); envErr != nil {
+				return nil, fmt.Errorf("设置环境变量失败: %v", envErr)
+			}
+			if envErr := xEnv.SetEnv(bSdkConst.EnvSsoEndpointRevocationURI, revocationURI); envErr != nil {
+				return nil, fmt.Errorf("设置环境变量失败: %v", envErr)
+			}
+			if envErr := xEnv.SetEnv(bSdkConst.EnvSsoRedirectURI, clientRedirectURI); envErr != nil {
 				return nil, fmt.Errorf("设置环境变量失败: %v", envErr)
 			}
 
@@ -141,4 +156,18 @@ func oAuthRedirectURI() xRegNode.RegNodeList {
 			return xEnv.GetEnvString(bSdkConst.EnvSsoRedirectURI, ""), nil
 		},
 	}
+}
+
+func readWellKnownURI(wellKnown map[string]any, field string) string {
+	value, exist := wellKnown[field]
+	if !exist {
+		return ""
+	}
+
+	uri, ok := value.(string)
+	if !ok {
+		return ""
+	}
+
+	return uri
 }
