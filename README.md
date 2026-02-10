@@ -94,6 +94,7 @@ func initRedis(ctx context.Context) (any, error) {
 
 可选：
 - `SSO_WELL_KNOWN_URI`（自动发现端点，支持 authorization/token/userinfo/introspection/revocation）
+- `SSO_BUSINESS_CACHE`（业务逻辑缓存开关，支持 `true` / `false`，默认 `false`）
 
 ## 项目结构
 - `handler/`: OAuth 回调与登出处理器

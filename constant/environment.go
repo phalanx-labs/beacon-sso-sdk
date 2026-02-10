@@ -12,4 +12,5 @@ const (
 	EnvSsoEndpointUserinfoURI      xEnv.EnvKey = "SSO_ENDPOINT_USERINFO_URI"      // 单点登录用户信息端点
 	EnvSsoEndpointIntrospectionURI xEnv.EnvKey = "SSO_ENDPOINT_INTROSPECTION_URI" // 单点登录令牌自省端点
 	EnvSsoEndpointRevocationURI    xEnv.EnvKey = "SSO_ENDPOINT_REVOCATION_URI"    // 单点登录令牌注销端点
+	EnvSsoBusinessCache            xEnv.EnvKey = "SSO_BUSINESS_CACHE"             // 业务函数缓存开关（true/false）
 )

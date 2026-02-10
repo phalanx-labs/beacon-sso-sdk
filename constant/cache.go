@@ -9,8 +9,10 @@ import (
 type RedisKey string
 
 const (
-	RedisOAuthState RedisKey = "oauth:state:%s" // OAuth state 缓存键
-	RedisOAuthToken RedisKey = "oauth:token:%s" // OAuth token 缓存键
+	RedisOAuthState            RedisKey = "oauth:state:%s"             // OAuth state 缓存键
+	RedisOAuthToken            RedisKey = "oauth:token:%s"             // OAuth token 缓存键
+	RedisBusinessUserinfo      RedisKey = "oauth:biz:userinfo:%s"      // 业务层 userinfo 缓存键
+	RedisBusinessIntrospection RedisKey = "oauth:biz:introspection:%s" // 业务层 introspection 缓存键
 )
 
 // Get 返回一个格式化后的 `RedisKey`，根据输入参数对原始键进行格式化并生成新的键。

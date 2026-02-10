@@ -3,6 +3,7 @@ package bSdkLogic
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -14,23 +15,28 @@ import (
 	"github.com/go-resty/resty/v2"
 	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
 	bSdkModels "github.com/phalanx/beacon-sso-sdk/models"
+	bSdkRepo "github.com/phalanx/beacon-sso-sdk/repository"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 // BusinessLogic 提供与业务相关的独立 OAuth 能力。
 type BusinessLogic struct {
-	db  *gorm.DB
-	rdb *redis.Client
-	log *xLog.LogNamedLogger
+	db                *gorm.DB
+	rdb               *redis.Client
+	log               *xLog.LogNamedLogger
+	userinfoData      *bSdkRepo.UserinfoRepo
+	introspectionData *bSdkRepo.IntrospectionRepo
 }
 
 // NewBusiness 创建并初始化 BusinessLogic。
 func NewBusiness(db *gorm.DB, rdb *redis.Client) *BusinessLogic {
 	return &BusinessLogic{
-		db:  db,
-		rdb: rdb,
-		log: xLog.WithName(xLog.NamedLOGC),
+		db:                db,
+		rdb:               rdb,
+		log:               xLog.WithName(xLog.NamedLOGC),
+		userinfoData:      bSdkRepo.NewUserinfoRepo(db, rdb),
+		introspectionData: bSdkRepo.NewIntrospectionRepo(db, rdb),
 	}
 }
 
@@ -53,6 +59,15 @@ func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkMod
 
 	if accessToken == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
+	}
+
+	cacheValue, cacheExists, cacheErr := l.userinfoData.GetCache(ctx, accessToken)
+	if cacheErr != nil {
+		l.log.Warn(ctx, "BusinessLogic|Userinfo - 读取缓存失败",
+			slog.String("error", cacheErr.Error()),
+		)
+	} else if cacheExists {
+		return cacheValue, nil
 	}
 
 	userinfoURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointUserinfoURI, "")
@@ -85,9 +100,7 @@ func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkMod
 		return nil, xError.NewError(ctx, xError.OperationFailed, "解析用户信息失败", false, err)
 	}
 
-	userinfo := &bSdkModels.OAuthUserinfo{
-		Raw: raw,
-	}
+	userinfo := &bSdkModels.OAuthUserinfo{Raw: raw}
 	if value, ok := raw["sub"].(string); ok {
 		userinfo.Sub = value
 	}
@@ -104,6 +117,11 @@ func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkMod
 		userinfo.Phone = value
 	}
 
+	if cacheErr = l.userinfoData.StoreCache(ctx, accessToken, userinfo); cacheErr != nil {
+		l.log.Warn(ctx, "BusinessLogic|Userinfo - 写入缓存失败",
+			slog.String("error", cacheErr.Error()),
+		)
+	}
 	return userinfo, nil
 }
 
@@ -116,6 +134,15 @@ func (l *BusinessLogic) Introspection(ctx *gin.Context, tokenType string, token 
 	}
 	if token == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
+	}
+
+	cacheValue, cacheExists, cacheErr := l.introspectionData.GetCache(ctx, tokenType, token)
+	if cacheErr != nil {
+		l.log.Warn(ctx, "BusinessLogic|Introspection - 读取缓存失败",
+			slog.String("error", cacheErr.Error()),
+		)
+	} else if cacheExists {
+		return cacheValue, nil
 	}
 
 	introspectionURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointIntrospectionURI, "")
@@ -166,7 +193,7 @@ func (l *BusinessLogic) Introspection(ctx *gin.Context, tokenType string, token 
 		result.TokenType = value
 	}
 
-	expUnix, ok := xUtil.Parse().ParseInt64(raw["exp"])
+	expUnix, ok := xUtil.Parse().Int64(raw["exp"])
 	if ok {
 		result.Exp = expUnix
 		expiry := time.Unix(expUnix, 0)
@@ -182,5 +209,10 @@ func (l *BusinessLogic) Introspection(ctx *gin.Context, tokenType string, token 
 		result.ExpiresIn = expiresIn
 	}
 
+	if cacheErr = l.introspectionData.StoreCache(ctx, tokenType, token, result); cacheErr != nil {
+		l.log.Warn(ctx, "BusinessLogic|Introspection - 写入缓存失败",
+			slog.String("error", cacheErr.Error()),
+		)
+	}
 	return result, nil
 }
