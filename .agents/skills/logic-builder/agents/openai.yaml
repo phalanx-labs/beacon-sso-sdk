@@ -1,0 +1,4 @@
+interface:
+  display_name: "Logic Builder"
+  short_description: "创建与扩展 Beacon SSO 业务逻辑的规范化工作流"
+  default_prompt: "请使用 $logic-builder 分析当前需求并实现新的 logic，保持 Beacon SSO 分层和错误处理规范。"

@@ -116,6 +116,13 @@ func oAuthConfig() xRegNode.RegNodeList {
 				},
 			}
 
+			// 同时设置环境变量，供其他节点使用
+			envErr := xEnv.SetEnv(bSdkConst.EnvSsoEndpointUserinfoURI, userinfoURI)
+			envErr = xEnv.SetEnv(bSdkConst.EnvSsoRedirectURI, clientRedirectURI)
+			if envErr != nil {
+				return nil, fmt.Errorf("设置环境变量失败: %v", envErr)
+			}
+
 			return oAuthConfig, nil
 		},
 	}
