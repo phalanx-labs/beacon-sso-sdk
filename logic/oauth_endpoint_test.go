@@ -13,7 +13,7 @@ import (
 func TestOAuthLogicLogout(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	ctx := newOAuthTestGinContext()
-	logic := NewOAuth(nil, nil)
+	logic := NewOAuth(nil)
 
 	t.Run("参数为空", func(t *testing.T) {
 		xErr := logic.Logout(ctx, "", "token")

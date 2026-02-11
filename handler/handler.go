@@ -4,7 +4,6 @@ import (
 	"context"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
 	bSdkLogic "github.com/phalanx/beacon-sso-sdk/logic"
 )
 
@@ -32,11 +31,8 @@ type handler struct {
 
 // registerService 注册 Service 的内容
 func (h *handler) registerService(ctx context.Context) {
-	db := xCtxUtil.MustGetDB(ctx)
-	rdb := xCtxUtil.MustGetRDB(ctx)
-
 	h.service = &service{
-		oauthLogic: bSdkLogic.NewOAuth(db.WithContext(ctx), rdb),
+		oauthLogic: bSdkLogic.NewOAuth(ctx),
 	}
 }
 

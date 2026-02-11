@@ -7,7 +7,6 @@ import (
 	xHttp "github.com/bamboo-services/bamboo-base-go/http"
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
 	xResult "github.com/bamboo-services/bamboo-base-go/result"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
 	"github.com/gin-gonic/gin"
 	bSdkLogic "github.com/phalanx/beacon-sso-sdk/logic"
 )
@@ -28,10 +27,7 @@ import (
 // 返回值:
 //   - gin.HandlerFunc: 配置好的 Gin 中间件处理函数。
 func CheckAuth(ctx context.Context) gin.HandlerFunc {
-	db := xCtxUtil.MustGetDB(ctx)
-	rdb := xCtxUtil.MustGetRDB(ctx)
-
-	oAuthLogic := bSdkLogic.NewOAuth(db, rdb)
+	oAuthLogic := bSdkLogic.NewOAuth(ctx)
 
 	return func(ctx *gin.Context) {
 		log := xLog.WithName(xLog.NamedMIDE)

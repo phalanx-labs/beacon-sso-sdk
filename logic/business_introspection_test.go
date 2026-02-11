@@ -15,7 +15,7 @@ import (
 func TestBusinessLogicIntrospection(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	ctx := newIntrospectionGinContext()
-	logic := NewBusiness(nil, nil)
+	logic := NewBusiness(nil)
 
 	t.Run("参数为空", func(t *testing.T) {
 		_, xErr := logic.Introspection(ctx, "", "token")

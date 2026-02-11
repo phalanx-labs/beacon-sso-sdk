@@ -1,6 +1,7 @@
 package bSdkLogic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 	xError "github.com/bamboo-services/bamboo-base-go/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
 	xUtil "github.com/bamboo-services/bamboo-base-go/utility"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
@@ -42,12 +44,14 @@ type OAuthLogic struct {
 // 提供完整的数据持久化、缓存加速和日志追踪能力。
 //
 // 参数:
-//   - db: 已初始化的 GORM 数据库实例，用于数据库交互。
-//   - rdb: 已初始化的 Redis 客户端，用于缓存数据。
+//   - ctx: 请求上下文，用于获取数据库和 Redis 实例。
 //
 // 返回值:
 //   - *OAuthLogic: 配置完成的 OAuth 逻辑层实例指针。
-func NewOAuth(db *gorm.DB, rdb *redis.Client) *OAuthLogic {
+func NewOAuth(ctx context.Context) *OAuthLogic {
+	db := xCtxUtil.MustGetDB(ctx)
+	rdb := xCtxUtil.MustGetRDB(ctx)
+
 	return &OAuthLogic{
 		db:        db,
 		rdb:       rdb,

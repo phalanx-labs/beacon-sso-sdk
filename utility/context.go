@@ -4,6 +4,7 @@ import (
 	"context"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
 	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
 	"golang.org/x/oauth2"
 )
@@ -21,12 +22,12 @@ import (
 //
 // 注意: 如果在上下文中找不到对应的配置（即注入失败），该函数会记录错误日志并 panic。
 func GetOAuthConfig(ctx context.Context) *oauth2.Config {
-	value := ctx.Value(bSdkConst.CtxOAuthConfig.String())
-	if value != nil {
-		return value.(*oauth2.Config)
+	get, err := xCtxUtil.Get[*oauth2.Config](ctx, bSdkConst.CtxOAuthConfig)
+	if err != nil {
+		xLog.WithName(xLog.NamedUTIL).Error(ctx, err.ErrorMessage.String())
+		panic(err.ErrorMessage.String())
 	}
-	xLog.Error(ctx, "在上下文中找不到 OAuth 配置，真的注入成功了吗？")
-	panic("在上下文中找不到 OAuth 配置，真的注入成功了吗？")
+	return get
 }
 
 // GetOAuthUserinfoURI 从上下文中获取 OAuth 用户信息 URI
@@ -43,10 +44,10 @@ func GetOAuthConfig(ctx context.Context) *oauth2.Config {
 // 注意: 此函数依赖于中间件或前置逻辑将 `bSdkConst.CtxOAuthUserinfoURI` 键注入到上下文中。
 // 如果获取失败，程序将 panic，通常意味着中间件配置缺失或执行顺序错误。
 func GetOAuthUserinfoURI(ctx context.Context) string {
-	value := ctx.Value(bSdkConst.CtxOAuthUserinfoURI.String())
-	if value != nil {
-		return value.(string)
+	get, err := xCtxUtil.Get[string](ctx, bSdkConst.CtxOAuthUserinfoURI)
+	if err != nil {
+		xLog.WithName(xLog.NamedUTIL).Error(ctx, err.ErrorMessage.String())
+		panic(err.ErrorMessage.String())
 	}
-	xLog.Error(ctx, "在上下文中找不到 OAuth 用户信息 URI，真的注入成功了吗？")
-	panic("在上下文中找不到 OAuth 用户信息 URI，真的注入成功了吗？")
+	return get
 }

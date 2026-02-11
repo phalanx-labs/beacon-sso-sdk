@@ -54,7 +54,8 @@ func oAuthConfig() xRegNode.RegNodeList {
 	return xRegNode.RegNodeList{
 		Key: bSdkConst.CtxOAuthConfig,
 		Node: func(ctx context.Context) (any, error) {
-			xLog.WithName(xLog.NamedINIT).Info(ctx, "初始化 OAuth 配置")
+			log := xLog.WithName(xLog.NamedINIT)
+			log.Info(ctx, "初始化 OAuth 配置")
 
 			var (
 				wkAuthURI          string // well-known 登录端点
@@ -64,7 +65,6 @@ func oAuthConfig() xRegNode.RegNodeList {
 				wkRevocationURI    string // well-known 令牌注销端点
 			)
 			if getWellKnown := xEnv.GetEnvString(bSdkConst.EnvSsoWellKnownURI, ""); getWellKnown != "" {
-				log := xLog.WithName(xLog.NamedINIT)
 				log.Info(ctx, "使用 SSO_WELL_KNOWN_URI 环境变量配置 OAuth2 Endpoint")
 
 				client := resty.New()

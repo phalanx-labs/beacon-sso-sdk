@@ -1,6 +1,7 @@
 package bSdkLogic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 	xError "github.com/bamboo-services/bamboo-base-go/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/log"
 	xUtil "github.com/bamboo-services/bamboo-base-go/utility"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
@@ -30,7 +32,10 @@ type BusinessLogic struct {
 }
 
 // NewBusiness 创建并初始化 BusinessLogic。
-func NewBusiness(db *gorm.DB, rdb *redis.Client) *BusinessLogic {
+func NewBusiness(ctx context.Context) *BusinessLogic {
+	db := xCtxUtil.MustGetDB(ctx)
+	rdb := xCtxUtil.MustGetRDB(ctx)
+
 	return &BusinessLogic{
 		db:                db,
 		rdb:               rdb,
