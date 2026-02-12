@@ -16,7 +16,7 @@ import (
 // 使用 OAuth2 SDK 生成授权跳转链接，并触发 302 重定向到 SSO 提供商的授权页面。
 // 可选接受 query 参数 state，用于防止 CSRF。
 func (h *AuthHandler) Login(ctx *gin.Context) {
-	h.log.Info(ctx, "AuthHandler|Login - 处理登录跳转请求")
+	h.log.Info(ctx, "Login - 处理登录跳转请求")
 
 	oAuth, xErr := h.service.oauthLogic.Create(ctx)
 	if xErr != nil {
@@ -37,7 +37,7 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 // 接收来自外部 SSO 提供商的回调，通过授权码换取访问令牌，并返回登录结果。
 // 该处理器会自动从环境变量中读取 SSO 客户端凭证，并验证请求中携带的 code 和 state 参数。
 func (h *AuthHandler) Callback(ctx *gin.Context) {
-	h.log.Info(ctx, "AuthHandler|Callback - 处理登录回调请求")
+	h.log.Info(ctx, "Callback - 处理登录回调请求")
 
 	// 检查是否产生错误返回
 	if getErrString, exist := ctx.GetQuery("error"); exist {
@@ -64,7 +64,7 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 	}
 
 	// 检查登录态
-	getAT := xHttp.GetToken(ctx, xHttp.HeaderAccessToken)
+	getAT := xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
 	getRT := xHttp.GetToken(ctx, xHttp.HeaderRefreshToken)
 
 	var getToken *oauth2.Token
@@ -104,7 +104,7 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 // 该处理器会根据请求头中的令牌调用 revocation endpoint 进行注销。
 // 默认注销 access token；当 query 参数 token_type=refresh_token 时注销刷新令牌。
 func (h *AuthHandler) Logout(ctx *gin.Context) {
-	h.log.Info(ctx, "AuthHandler|Logout - 处理登出请求")
+	h.log.Info(ctx, "Logout - 处理登出请求")
 
 	tokenType := ctx.DefaultQuery("token_type", "access_token")
 	var token string
@@ -113,7 +113,7 @@ func (h *AuthHandler) Logout(ctx *gin.Context) {
 		token = xHttp.GetToken(ctx, xHttp.HeaderRefreshToken)
 	default:
 		tokenType = "access_token"
-		token = xHttp.GetToken(ctx, xHttp.HeaderAccessToken)
+		token = xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
 	}
 
 	if token == "" {

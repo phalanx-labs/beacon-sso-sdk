@@ -31,7 +31,7 @@ func NewOAuthTokenRepo(db *gorm.DB, rdb *redis.Client) *OAuthTokenRepo {
 	return &OAuthTokenRepo{
 		db:    db,
 		cache: bSdkCache.NewOAuthTokenCache(rdb),
-		log:   xLog.WithName(xLog.NamedLOGC),
+		log:   xLog.WithName(xLog.NamedREPO, "OAuthTokenRepo"),
 	}
 }
 

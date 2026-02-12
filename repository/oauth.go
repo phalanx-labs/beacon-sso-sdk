@@ -20,11 +20,6 @@ type OAuthRepo struct {
 	log   *xLog.LogNamedLogger
 }
 
-const (
-	oauthCacheFieldState    = "state"
-	oauthCacheFieldVerifier = "verifier"
-)
-
 // NewOAuthRepo 创建并初始化一个 OAuth 数据仓储实例。
 //
 // 该函数接受 GORM 数据库连接和 Redis 客户端作为参数，用于底层的持久化存储
@@ -41,7 +36,7 @@ func NewOAuthRepo(db *gorm.DB, rdb *redis.Client) *OAuthRepo {
 	return &OAuthRepo{
 		db:    db,
 		cache: bSdkCache.NewOAuthCache(rdb),
-		log:   xLog.WithName(xLog.NamedLOGC),
+		log:   xLog.WithName(xLog.NamedREPO, "OAuthRepo"),
 	}
 }
 

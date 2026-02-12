@@ -33,7 +33,7 @@ func NewUserinfoRepo(db *gorm.DB, rdb *redis.Client) *UserinfoRepo {
 	return &UserinfoRepo{
 		db:    db,
 		cache: bSdkCache.NewUserinfoCache(rdb),
-		log:   xLog.WithName(xLog.NamedLOGC),
+		log:   xLog.WithName(xLog.NamedREPO, "UserinfoRepo"),
 	}
 }
 

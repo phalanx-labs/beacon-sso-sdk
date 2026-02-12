@@ -34,7 +34,7 @@ type OAuthCache xCache.Cache
 func NewOAuthCache(rdb *redis.Client) *OAuthCache {
 	return &OAuthCache{
 		RDB: rdb,
-		TTL: time.Minute * 30,
+		TTL: time.Minute * 15,
 	}
 }
 

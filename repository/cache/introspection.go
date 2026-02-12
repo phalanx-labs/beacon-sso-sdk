@@ -30,7 +30,7 @@ type IntrospectionCache xCache.Cache
 func NewIntrospectionCache(rdb *redis.Client) *IntrospectionCache {
 	return &IntrospectionCache{
 		RDB: rdb,
-		TTL: time.Minute * 15,
+		TTL: time.Second * 30,
 	}
 }
 

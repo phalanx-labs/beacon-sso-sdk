@@ -25,11 +25,11 @@ type UserinfoCache xCache.Cache
 //   - rdb: 已初始化的 Redis 客户端连接，用于底层数据交互。
 //
 // 返回值:
-//   - *UserinfoCache: 配置完成的缓存管理器指针，默认 TTL 为 10 分钟。
+//   - *UserinfoCache: 配置完成的缓存管理器指针，默认 TTL 为 30 秒。
 func NewUserinfoCache(rdb *redis.Client) *UserinfoCache {
 	return &UserinfoCache{
 		RDB: rdb,
-		TTL: time.Minute * 10,
+		TTL: time.Second * 30,
 	}
 }
 

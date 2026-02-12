@@ -2,7 +2,6 @@ package bSdkLogic
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -55,7 +54,7 @@ func NewOAuth(ctx context.Context) *OAuthLogic {
 	return &OAuthLogic{
 		db:        db,
 		rdb:       rdb,
-		log:       xLog.WithName(xLog.NamedLOGC),
+		log:       xLog.WithName(xLog.NamedLOGC, "OAuthLogic"),
 		data:      bSdkRepo.NewOAuthRepo(db, rdb),
 		tokenData: bSdkRepo.NewOAuthTokenRepo(db, rdb),
 	}
@@ -76,7 +75,7 @@ func NewOAuth(ctx context.Context) *OAuthLogic {
 //
 // 注意: 此方法仅负责数据的创建与存储，不直接处理 HTTP 请求或响应。
 func (l *OAuthLogic) Create(ctx *gin.Context) (*bSdkModels.CacheOAuth, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|Create - 创建 STATE 和 PCKE 码")
+	l.log.Info(ctx, "Create - 创建 STATE 和 PCKE 码")
 
 	generateVerifier := oauth2.GenerateVerifier()
 	state := xUtil.GenerateRandomUpperString(32)
@@ -105,7 +104,7 @@ func (l *OAuthLogic) Create(ctx *gin.Context) (*bSdkModels.CacheOAuth, *xError.E
 //   - string: 生成的授权跳转 URL。
 //   - *xError.Error: 构建失败时（例如获取配置失败）返回错误，否则为 nil。
 func (l *OAuthLogic) BuildURL(ctx *gin.Context, oAuth *bSdkModels.CacheOAuth) (string, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|BuildURL - 构建跳转地址")
+	l.log.Info(ctx, "BuildURL - 构建跳转地址")
 
 	var authCodeConfig = []oauth2.AuthCodeOption{
 		oauth2.S256ChallengeOption(oAuth.Verifier),
@@ -130,7 +129,7 @@ func (l *OAuthLogic) BuildURL(ctx *gin.Context, oAuth *bSdkModels.CacheOAuth) (s
 // 注意: 验证通过后，该方法会尝试从缓存中删除该 state 记录。如果删除操作失败，
 // 仅记录警告日志而不阻断验证流程。
 func (l *OAuthLogic) Verify(ctx *gin.Context, state string) (*bSdkModels.CacheOAuth, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|Verify - 校验 STATE")
+	l.log.Info(ctx, "Verify - 校验 STATE")
 
 	if state == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "状态为空", false, nil)
@@ -169,7 +168,7 @@ func (l *OAuthLogic) Verify(ctx *gin.Context, state string) (*bSdkModels.CacheOA
 //   - *oauth2.Token: 包含访问令牌、刷新令牌及过期时间信息的对象。
 //   - *xError.Error: 如果授权码无效、验证器不匹配或网络请求失败，则返回具体的错误信息。
 func (l *OAuthLogic) Exchange(ctx *gin.Context, code string, verifier string) (*oauth2.Token, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|Exchange - 换取令牌")
+	l.log.Info(ctx, "Exchange - 换取令牌")
 
 	var authCodeConfig = []oauth2.AuthCodeOption{
 		oauth2.VerifierOption(verifier),
@@ -196,12 +195,11 @@ func (l *OAuthLogic) Exchange(ctx *gin.Context, code string, verifier string) (*
 }
 
 func (l *OAuthLogic) TokenSource(ctx *gin.Context, cacheToken *bSdkModels.CacheOAuthToken, rt string) (*oauth2.Token, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|TokenSource - 刷新令牌")
+	l.log.Info(ctx, "TokenSource - 刷新令牌")
 
 	// 校验 RT 是否一致
-	if cacheToken.AccessToken != rt {
-		_ = l.tokenData.Delete(ctx, cacheToken.AccessToken).Error()
-		return nil, xError.NewError(ctx, xError.Unauthorized, "未登录", false, errors.New("refresh token 不匹配"))
+	if cacheToken.RefreshToken != rt {
+		return nil, l.tokenData.Delete(ctx, cacheToken.AccessToken)
 	}
 
 	// 构造 oauth2.Token
@@ -237,7 +235,7 @@ func (l *OAuthLogic) TokenSource(ctx *gin.Context, cacheToken *bSdkModels.CacheO
 //   - *bSdkModels.CacheOAuthToken: 缓存中的令牌信息。
 //   - *xError.Error: 查询失败时返回错误信息。
 func (l *OAuthLogic) GetToken(ctx *gin.Context, accessToken string) (*bSdkModels.CacheOAuthToken, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|GetToken - 获取缓存令牌")
+	l.log.Info(ctx, "GetToken - 获取缓存令牌")
 
 	if accessToken == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
@@ -258,7 +256,7 @@ func (l *OAuthLogic) GetToken(ctx *gin.Context, accessToken string) (*bSdkModels
 //   - bool: 如果令牌已过期返回 true，否则返回 false。
 //   - *xError.Error: 查询令牌信息失败时返回错误，成功时为 nil。
 func (l *OAuthLogic) VerifyExpiry(ctx *gin.Context, accessToken string) (bool, *xError.Error) {
-	l.log.Info(ctx, "OAuthLogic|VerifyExpiry - 验证令牌过期")
+	l.log.Info(ctx, "VerifyExpiry - 验证令牌过期")
 
 	getToken, xErr := l.tokenData.Get(ctx, accessToken)
 	if xErr != nil {
@@ -276,7 +274,7 @@ func (l *OAuthLogic) VerifyExpiry(ctx *gin.Context, accessToken string) (bool, *
 // 该方法会把指定 token 发送到 revocation endpoint 完成远端注销，
 // 并尝试清理本地缓存中的 access token。缓存清理失败仅记录告警，不阻断主流程。
 func (l *OAuthLogic) Logout(ctx *gin.Context, tokenType string, token string) *xError.Error {
-	l.log.Info(ctx, "OAuthLogic|Logout - 注销令牌")
+	l.log.Info(ctx, "Logout - 注销令牌")
 
 	if tokenType == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "令牌类型为空", false, nil)

@@ -46,7 +46,7 @@ type AuthHandler handler
 // NewAuthHandler 创建并初始化一个 AuthHandler 实例
 func NewAuthHandler(ctx context.Context) *AuthHandler {
 	newHandler := &AuthHandler{
-		log: xLog.WithName(xLog.NamedCONT),
+		log: xLog.WithName(xLog.NamedCONT, "AuthHandler"),
 	}
 	(*handler)(newHandler).registerService(ctx)
 	return newHandler

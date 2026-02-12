@@ -39,7 +39,7 @@ func NewBusiness(ctx context.Context) *BusinessLogic {
 	return &BusinessLogic{
 		db:                db,
 		rdb:               rdb,
-		log:               xLog.WithName(xLog.NamedLOGC),
+		log:               xLog.WithName(xLog.NamedLOGC, "BusinessLogic"),
 		userinfoData:      bSdkRepo.NewUserinfoRepo(db, rdb),
 		introspectionData: bSdkRepo.NewIntrospectionRepo(db, rdb),
 	}
@@ -60,7 +60,7 @@ func NewBusiness(ctx context.Context) *BusinessLogic {
 //   - *bSdkModels.OAuthUserinfo: 解析后的用户信息对象，包含标准字段和原始数据。
 //   - *xError.Error: 操作过程中发生的错误，如令牌为空、网络请求失败或解析错误。
 func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkModels.OAuthUserinfo, *xError.Error) {
-	l.log.Info(ctx, "BusinessLogic|Userinfo - 获取用户信息")
+	l.log.Info(ctx, "Userinfo - 获取用户信息")
 
 	if accessToken == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
@@ -132,7 +132,7 @@ func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkMod
 
 // Introspection 调用 OAuth2 Introspection Endpoint 查询令牌状态与有效期。
 func (l *BusinessLogic) Introspection(ctx *gin.Context, tokenType string, token string) (*bSdkModels.OAuthIntrospection, *xError.Error) {
-	l.log.Info(ctx, "BusinessLogic|Introspection - 查询令牌有效期")
+	l.log.Info(ctx, "Introspection - 查询令牌有效期")
 
 	if tokenType == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌类型为空", false, nil)

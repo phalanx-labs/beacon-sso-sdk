@@ -33,7 +33,7 @@ func NewIntrospectionRepo(db *gorm.DB, rdb *redis.Client) *IntrospectionRepo {
 	return &IntrospectionRepo{
 		db:    db,
 		cache: bSdkCache.NewIntrospectionCache(rdb),
-		log:   xLog.WithName(xLog.NamedLOGC),
+		log:   xLog.WithName(xLog.NamedREPO, "IntrospectionRepo"),
 	}
 }
 

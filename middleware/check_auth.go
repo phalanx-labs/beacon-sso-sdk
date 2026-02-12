@@ -29,30 +29,33 @@ import (
 func CheckAuth(ctx context.Context) gin.HandlerFunc {
 	oAuthLogic := bSdkLogic.NewOAuth(ctx)
 
-	return func(ctx *gin.Context) {
-		log := xLog.WithName(xLog.NamedMIDE)
-		log.Info(ctx, "CheckAuth - 检查用户身份认证信息")
+	return func(c *gin.Context) {
+		log := xLog.WithName(xLog.NamedMIDE, "CheckAuth")
+		log.Info(c, "检查用户身份认证信息")
 
 		// 获取用户身份令牌
-		getAT := xHttp.GetToken(ctx, xHttp.HeaderAccessToken)
+		getAT := xHttp.GetToken(c, xHttp.HeaderAuthorization)
 		if getAT == "" {
-			xResult.AbortError(ctx, xError.ParameterEmpty, "需要访问令牌参数", nil)
+			xResult.AbortError(c, xError.ParameterEmpty, "需要访问令牌参数", nil)
 			return
 		}
 
-		isValid, xErr := oAuthLogic.VerifyExpiry(ctx, getAT)
+		isExpire, xErr := oAuthLogic.VerifyExpiry(c, getAT)
 		if xErr != nil {
-			xResult.AbortError(ctx, xErr.ErrorCode, xErr.ErrorMessage, xErr.Data)
+			xResult.AbortError(c, xErr.ErrorCode, xErr.ErrorMessage, xErr.Data)
 			return
 		}
 
 		// 验证是否过期
-		if !isValid {
-			xResult.AbortError(ctx, xError.TokenExpired, "访问令牌已过期", nil)
+		if isExpire {
+			xResult.AbortError(c, xError.TokenExpired, "访问令牌已过期", nil)
 			return
 		}
 
+		// 存入 GIN 上下文
+		c.Set(xHttp.HeaderAuthorization.String(), getAT)
+
 		// 校验通过
-		ctx.Next()
+		c.Next()
 	}
 }
