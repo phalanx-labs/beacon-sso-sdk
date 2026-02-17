@@ -51,38 +51,11 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 		}
 	}
 
-	// 获取回调代码参数
-	getCode, exist := ctx.GetQuery("code")
-	if !exist || getCode == "" {
-		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要代码参数", false, nil))
-		return
-	}
-	getState, exist := ctx.GetQuery("state")
-	if !exist || getState == "" {
-		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要状态参数", false, nil))
-		return
-	}
-
-	// 检查登录态
-	getAT := xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
-	getRT := xHttp.GetToken(ctx, xHttp.HeaderRefreshToken)
-
 	var getToken *oauth2.Token
-	if getAT != "" && getRT != "" {
-		// 刷新类型
-		cacheToken, xErr := h.service.oauthLogic.GetToken(ctx, getAT)
-		if xErr != nil {
-			_ = ctx.Error(xErr)
-			return
-		}
-		tokenSource, xErr := h.service.oauthLogic.TokenSource(ctx, cacheToken, getRT)
-		if xErr != nil {
-			_ = ctx.Error(xErr)
-			return
-		}
-		getToken = tokenSource
-	} else {
-		// 授权类型
+	getCode, codeExist := ctx.GetQuery("code")
+	getState, stateExist := ctx.GetQuery("state")
+
+	if codeExist && stateExist && getCode != "" && getState != "" {
 		oAuth, xErr := h.service.oauthLogic.Verify(ctx, getState)
 		if xErr != nil {
 			_ = ctx.Error(xErr)
@@ -94,6 +67,25 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 			return
 		}
 		getToken = token
+	} else {
+		getAT := xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
+		getRT := xHttp.GetToken(ctx, xHttp.HeaderRefreshToken)
+		if getAT == "" || getRT == "" {
+			_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要 code/state 参数或令牌参数", false, nil))
+			return
+		}
+
+		cacheToken, xErr := h.service.oauthLogic.GetToken(ctx, getAT)
+		if xErr != nil {
+			_ = ctx.Error(xErr)
+			return
+		}
+		tokenSource, xErr := h.service.oauthLogic.TokenSource(ctx, cacheToken, getRT)
+		if xErr != nil {
+			_ = ctx.Error(xErr)
+			return
+		}
+		getToken = tokenSource
 	}
 
 	xResult.SuccessHasData(ctx, "登录成功", getToken)

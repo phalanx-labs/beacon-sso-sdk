@@ -186,7 +186,7 @@ func (l *OAuthLogic) Exchange(ctx *gin.Context, code string, verifier string) (*
 		Expiry:       getToken.Expiry.Format(time.RFC3339),
 	}
 	if storeErr := l.tokenData.Store(ctx, cacheToken); storeErr != nil {
-		l.log.Warn(ctx, "OAuthLogic|Exchange - 缓存令牌失败",
+		l.log.Warn(ctx, "Exchange - 缓存令牌失败",
 			slog.String("error", storeErr.Error()),
 		)
 	}
@@ -218,6 +218,17 @@ func (l *OAuthLogic) TokenSource(ctx *gin.Context, cacheToken *bSdkModels.CacheO
 	tokenSource, err := bSdkUtil.GetOAuthConfig(ctx).TokenSource(ctx, oldToke).Token()
 	if err != nil {
 		return nil, xError.NewError(ctx, xError.Unauthorized, "未登录", false, err)
+	}
+	newToken := &bSdkModels.CacheOAuthToken{
+		AccessToken:  tokenSource.AccessToken,
+		TokenType:    tokenSource.TokenType,
+		RefreshToken: tokenSource.RefreshToken,
+		Expiry:       tokenSource.Expiry.Format(time.RFC3339),
+	}
+	if storeErr := l.tokenData.Store(ctx, newToken); storeErr != nil {
+		l.log.Warn(ctx, "Exchange - 缓存令牌失败",
+			slog.String("error", storeErr.Error()),
+		)
 	}
 	return tokenSource, nil
 }
