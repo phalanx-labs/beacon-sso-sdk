@@ -3,9 +3,9 @@ module github.com/phalanx-labs/beacon-sso-sdk
 go 1.25.3
 
 require (
-	github.com/bamboo-services/bamboo-base-go/common v1.0.0-202602241855
-	github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202602241812
-	github.com/bamboo-services/bamboo-base-go/major v1.0.0-202602241859
+	github.com/bamboo-services/bamboo-base-go/common v1.0.0-202602242007
+	github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202602241921
+	github.com/bamboo-services/bamboo-base-go/major v1.0.0-202602241924
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/redis/go-redis/v9 v9.18.0
