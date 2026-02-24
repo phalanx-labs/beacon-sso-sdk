@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	xError "github.com/bamboo-services/bamboo-base-go/error"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	"github.com/gin-gonic/gin"
-	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 )
 
 func TestBusinessLogicIntrospection(t *testing.T) {

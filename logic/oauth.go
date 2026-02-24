@@ -7,17 +7,17 @@ import (
 	"net/http"
 	"time"
 
-	xEnv "github.com/bamboo-services/bamboo-base-go/env"
-	xError "github.com/bamboo-services/bamboo-base-go/error"
-	xLog "github.com/bamboo-services/bamboo-base-go/log"
-	xUtil "github.com/bamboo-services/bamboo-base-go/utility"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
+	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xUtil "github.com/bamboo-services/bamboo-base-go/common/utility"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
-	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
-	bSdkModels "github.com/phalanx/beacon-sso-sdk/models"
-	bSdkRepo "github.com/phalanx/beacon-sso-sdk/repository"
-	bSdkUtil "github.com/phalanx/beacon-sso-sdk/utility"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
+	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
+	bSdkRepo "github.com/phalanx-labs/beacon-sso-sdk/repository"
+	bSdkUtil "github.com/phalanx-labs/beacon-sso-sdk/utility"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
@@ -78,7 +78,7 @@ func (l *OAuthLogic) Create(ctx *gin.Context) (*bSdkModels.CacheOAuth, *xError.E
 	l.log.Info(ctx, "Create - 创建 STATE 和 PCKE 码")
 
 	generateVerifier := oauth2.GenerateVerifier()
-	state := xUtil.GenerateRandomUpperString(32)
+	state := xUtil.Generate().RandomUpperString(32)
 
 	if err := l.data.Store(ctx, state, generateVerifier); err != nil {
 		return nil, err

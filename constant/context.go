@@ -1,6 +1,6 @@
 package bSdkConst
 
-import xCtx "github.com/bamboo-services/bamboo-base-go/context"
+import xCtx "github.com/bamboo-services/bamboo-base-go/defined/context"
 
 const (
 	CtxOAuthConfig      xCtx.ContextKey = "oauth_config"       // OAuth 配置上下文键

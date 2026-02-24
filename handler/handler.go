@@ -3,8 +3,8 @@ package bSdkHandler
 import (
 	"context"
 
-	xLog "github.com/bamboo-services/bamboo-base-go/log"
-	bSdkLogic "github.com/phalanx/beacon-sso-sdk/logic"
+	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	bSdkLogic "github.com/phalanx-labs/beacon-sso-sdk/logic"
 )
 
 // service 业务逻辑处理层的核心结构体

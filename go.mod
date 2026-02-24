@@ -1,15 +1,15 @@
-module github.com/phalanx/beacon-sso-sdk
+module github.com/phalanx-labs/beacon-sso-sdk
 
 go 1.25.3
 
-replace github.com/bamboo-services/bamboo-base-go v1.0.0-202602051602 => /Users/xiaolfeng/ProgramProjects/Cooperate/bamboo-service/bamboo-base
-
 require (
-	github.com/bamboo-services/bamboo-base-go v1.0.0-202602051602
+	github.com/bamboo-services/bamboo-base-go/common v1.0.0-202602241855
+	github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202602241812
+	github.com/bamboo-services/bamboo-base-go/major v1.0.0-202602241859
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-resty/resty/v2 v2.17.1
-	github.com/redis/go-redis/v9 v9.14.0
-	golang.org/x/oauth2 v0.34.0
+	github.com/go-resty/resty/v2 v2.17.2
+	github.com/redis/go-redis/v9 v9.18.0
+	golang.org/x/oauth2 v0.35.0
 	gorm.io/gorm v1.31.1
 )
 
@@ -41,11 +41,11 @@ require (
 	github.com/quic-go/quic-go v0.59.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
-	go.uber.org/mock v0.6.0 // indirect
-	golang.org/x/arch v0.23.0 // indirect
-	golang.org/x/crypto v0.47.0 // indirect
-	golang.org/x/net v0.49.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
+	golang.org/x/arch v0.24.0 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
+	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

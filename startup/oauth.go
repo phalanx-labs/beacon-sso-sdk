@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	xEnv "github.com/bamboo-services/bamboo-base-go/env"
-	xLog "github.com/bamboo-services/bamboo-base-go/log"
-	xRegNode "github.com/bamboo-services/bamboo-base-go/register/node"
+	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
+	xRegNode "github.com/bamboo-services/bamboo-base-go/major/register/node"
 	"github.com/go-resty/resty/v2"
-	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	"golang.org/x/oauth2"
 )
 

@@ -1,6 +1,6 @@
 package bSdkConst
 
-import xEnv "github.com/bamboo-services/bamboo-base-go/env"
+import xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
 
 const (
 	EnvSsoClientID                 xEnv.EnvKey = "SSO_CLIENT_ID"                  // 单点登录客户端 ID

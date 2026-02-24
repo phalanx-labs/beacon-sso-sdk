@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	xCache "github.com/bamboo-services/bamboo-base-go/cache"
-	xEnv "github.com/bamboo-services/bamboo-base-go/env"
-	xUtil "github.com/bamboo-services/bamboo-base-go/utility"
-	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
-	bSdkModels "github.com/phalanx/beacon-sso-sdk/models"
+	xUtil "github.com/bamboo-services/bamboo-base-go/common/utility"
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
+	xCache "github.com/bamboo-services/bamboo-base-go/major/cache"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
+	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
 	"github.com/redis/go-redis/v9"
 )
 

@@ -12,7 +12,7 @@
 
 ### 1) 安装
 ```bash
-go get github.com/phalanx/beacon-sso-sdk
+go get github.com/phalanx-labs/beacon-sso-sdk
 ```
 
 ### 2) 初始化并挂载路由（推荐）
@@ -25,14 +25,14 @@ package main
 import (
 	"context"
 
-	xConsts "github.com/bamboo-services/bamboo-base-go/context"
-	xReg "github.com/bamboo-services/bamboo-base-go/register"
-	xRegNode "github.com/bamboo-services/bamboo-base-go/register/node"
-	xResult "github.com/bamboo-services/bamboo-base-go/result"
+	xConsts "github.com/bamboo-services/bamboo-base-go/defined/context"
+	xReg "github.com/bamboo-services/bamboo-base-go/major/register"
+	xRegNode "github.com/bamboo-services/bamboo-base-go/major/register/node"
+	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	bSdkRoute "github.com/phalanx/beacon-sso-sdk/route"
-	bSdkStartup "github.com/phalanx/beacon-sso-sdk/startup"
+	bSdkRoute "github.com/phalanx-labs/beacon-sso-sdk/route"
+	bSdkStartup "github.com/phalanx-labs/beacon-sso-sdk/startup"
 	"gorm.io/gorm"
 )
 

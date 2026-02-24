@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	xError "github.com/bamboo-services/bamboo-base-go/error"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	"github.com/gin-gonic/gin"
 )
 

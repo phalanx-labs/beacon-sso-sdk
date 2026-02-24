@@ -3,12 +3,12 @@ package bSdkMiddle
 import (
 	"context"
 
-	xError "github.com/bamboo-services/bamboo-base-go/error"
-	xHttp "github.com/bamboo-services/bamboo-base-go/http"
-	xLog "github.com/bamboo-services/bamboo-base-go/log"
-	xResult "github.com/bamboo-services/bamboo-base-go/result"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
+	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xHttp "github.com/bamboo-services/bamboo-base-go/major/http"
+	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
-	bSdkLogic "github.com/phalanx/beacon-sso-sdk/logic"
+	bSdkLogic "github.com/phalanx-labs/beacon-sso-sdk/logic"
 )
 
 // CheckAuth 检查用户身份认证信息
@@ -27,10 +27,11 @@ import (
 // 返回值:
 //   - gin.HandlerFunc: 配置好的 Gin 中间件处理函数。
 func CheckAuth(ctx context.Context) gin.HandlerFunc {
+	log := xLog.WithName(xLog.NamedMIDE, "CheckAuth")
+
 	oAuthLogic := bSdkLogic.NewOAuth(ctx)
 
 	return func(c *gin.Context) {
-		log := xLog.WithName(xLog.NamedMIDE, "CheckAuth")
 		log.Info(c, "检查用户身份认证信息")
 
 		// 获取用户身份令牌

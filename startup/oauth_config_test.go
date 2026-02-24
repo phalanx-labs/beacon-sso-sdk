@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	xEnv "github.com/bamboo-services/bamboo-base-go/env"
-	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	"golang.org/x/oauth2"
 )
 

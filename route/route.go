@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	bSdkHandler "github.com/phalanx/beacon-sso-sdk/handler"
+	bSdkHandler "github.com/phalanx-labs/beacon-sso-sdk/handler"
 )
 
 type Route struct {

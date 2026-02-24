@@ -3,11 +3,11 @@ package bSdkRepo
 import (
 	"encoding/json"
 
-	xError "github.com/bamboo-services/bamboo-base-go/error"
-	xLog "github.com/bamboo-services/bamboo-base-go/log"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
+	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	"github.com/gin-gonic/gin"
-	bSdkModels "github.com/phalanx/beacon-sso-sdk/models"
-	bSdkCache "github.com/phalanx/beacon-sso-sdk/repository/cache"
+	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
+	bSdkCache "github.com/phalanx-labs/beacon-sso-sdk/repository/cache"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )

@@ -3,9 +3,9 @@ package bSdkUtil
 import (
 	"context"
 
-	xLog "github.com/bamboo-services/bamboo-base-go/log"
-	xCtxUtil "github.com/bamboo-services/bamboo-base-go/utility/ctxutil"
-	bSdkConst "github.com/phalanx/beacon-sso-sdk/constant"
+	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	"golang.org/x/oauth2"
 )
 

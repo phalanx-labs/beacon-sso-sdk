@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	xError "github.com/bamboo-services/bamboo-base-go/error"
-	xHttp "github.com/bamboo-services/bamboo-base-go/http"
-	xResult "github.com/bamboo-services/bamboo-base-go/result"
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
+	xHttp "github.com/bamboo-services/bamboo-base-go/major/http"
+	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 )
