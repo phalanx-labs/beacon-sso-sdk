@@ -2,12 +2,12 @@ version: v2
 
 plugins:
   - local: protoc-gen-go
-    out: ./client/api
+    out: ./api
     opt:
       - paths=source_relative
       - Mlink/base.proto=github.com/bamboo-services/bamboo-base-go/plugins/grpc/generate
   - local: protoc-gen-connect-go
-    out: ./client/connect
+    out: ./connect
     opt:
       - paths=source_relative
 

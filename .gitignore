@@ -34,3 +34,5 @@ coverage.out
 
 # OS
 .DS_Store
+
+client/proto/link

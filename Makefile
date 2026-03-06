@@ -1,7 +1,7 @@
 # 变量定义
-PROTO_FILE ?= proto/beacon/sso/v1/public.proto
+PROTO_FILE ?= client/proto/beacon/sso/v1/public.proto
 BASE_GO_MODULE_DIR := /Users/xiaolfeng/ProgramProjects/Cooperate/bamboo-service/bamboo-base/plugins/grpc
-XBASE_LINK := proto/link/base.proto
+XBASE_LINK := client/proto/link/base.proto
 
 # 获取版本号（去除 v 前缀）
 VERSION := $(shell cat version | sed 's/^v//')
@@ -57,8 +57,8 @@ proto: proto-init
 
 # 生成所有 proto 文件
 proto-all: proto-init
-	buf generate --path proto/beacon/sso/v1/public.proto
-	buf generate --path proto/beacon/sso/v1/auth.proto
+	buf generate --path client/proto/beacon/sso/v1/public.proto
+	buf generate --path client/proto/beacon/sso/v1/auth.proto
 	@echo "✅ 所有 proto 文件生成完成"
 
 tidy:
