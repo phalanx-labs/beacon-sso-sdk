@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package beacon.sso.v1;
+
+import "link/base.proto";
+
+option go_package = "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pb";
+
+// SendRegisterEmailCodeRequest 发送注册验证码请求
+message SendRegisterEmailCodeRequest {
+  // 目标邮箱地址
+  string email = 1;
+}
+
+// SendRegisterEmailCodeResponse 发送注册验证码响应
+message SendRegisterEmailCodeResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+}
+
+// PublicService 公共服务（无需用户认证）
+service PublicService {
+  // SendRegisterEmailCode 发送注册邮箱验证码
+  //
+  // 该接口用于向指定邮箱发送注册验证码，验证码有效期为环境变量 EMAIL_VERIFY_CODE_EXPIRE 配置的时间（默认 15 分钟）。
+  // 同一邮箱在 1 分钟内只能发送一次验证码。
+  rpc SendRegisterEmailCode(SendRegisterEmailCodeRequest) returns (SendRegisterEmailCodeResponse);
+}
