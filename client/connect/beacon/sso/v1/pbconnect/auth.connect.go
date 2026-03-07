@@ -39,6 +39,9 @@ const (
 	// AuthServicePasswordLoginProcedure is the fully-qualified name of the AuthService's PasswordLogin
 	// RPC.
 	AuthServicePasswordLoginProcedure = "/beacon.sso.v1.AuthService/PasswordLogin"
+	// AuthServiceChangePasswordProcedure is the fully-qualified name of the AuthService's
+	// ChangePassword RPC.
+	AuthServiceChangePasswordProcedure = "/beacon.sso.v1.AuthService/ChangePassword"
 )
 
 // AuthServiceClient is a client for the beacon.sso.v1.AuthService service.
@@ -65,6 +68,20 @@ type AuthServiceClient interface {
 	// - 复用现有的密码验证逻辑（BCrypt）
 	// - 复用现有的账户锁定机制
 	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
+	// ChangePassword 修改用户密码
+	//
+	// 该方法允许已认证的应用为用户修改密码。
+	// 普通模式需要验证旧密码，强制重置模式可跳过旧密码验证。
+	//
+	// 模式说明：
+	// - 普通模式（NeedResetPassword=false）：必须提供 old_password 进行验证
+	// - 强制重置模式（NeedResetPassword=true）：可省略 old_password，直接设置新密码
+	//
+	// 安全特性：
+	// - 旧密码验证使用 BCrypt
+	// - 新密码必须满足强度要求（至少6位，包含字母和数字）
+	// - 新密码不能与旧密码相同
+	ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the beacon.sso.v1.AuthService service. By default,
@@ -90,6 +107,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("PasswordLogin")),
 			connect.WithClientOptions(opts...),
 		),
+		changePassword: connect.NewClient[v1.ChangePasswordRequest, v1.ChangePasswordResponse](
+			httpClient,
+			baseURL+AuthServiceChangePasswordProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ChangePassword")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -97,6 +120,7 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 type authServiceClient struct {
 	registerByEmail *connect.Client[v1.RegisterByEmailRequest, v1.RegisterByEmailResponse]
 	passwordLogin   *connect.Client[v1.PasswordLoginRequest, v1.PasswordLoginResponse]
+	changePassword  *connect.Client[v1.ChangePasswordRequest, v1.ChangePasswordResponse]
 }
 
 // RegisterByEmail calls beacon.sso.v1.AuthService.RegisterByEmail.
@@ -107,6 +131,11 @@ func (c *authServiceClient) RegisterByEmail(ctx context.Context, req *connect.Re
 // PasswordLogin calls beacon.sso.v1.AuthService.PasswordLogin.
 func (c *authServiceClient) PasswordLogin(ctx context.Context, req *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error) {
 	return c.passwordLogin.CallUnary(ctx, req)
+}
+
+// ChangePassword calls beacon.sso.v1.AuthService.ChangePassword.
+func (c *authServiceClient) ChangePassword(ctx context.Context, req *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error) {
+	return c.changePassword.CallUnary(ctx, req)
 }
 
 // AuthServiceHandler is an implementation of the beacon.sso.v1.AuthService service.
@@ -133,6 +162,20 @@ type AuthServiceHandler interface {
 	// - 复用现有的密码验证逻辑（BCrypt）
 	// - 复用现有的账户锁定机制
 	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
+	// ChangePassword 修改用户密码
+	//
+	// 该方法允许已认证的应用为用户修改密码。
+	// 普通模式需要验证旧密码，强制重置模式可跳过旧密码验证。
+	//
+	// 模式说明：
+	// - 普通模式（NeedResetPassword=false）：必须提供 old_password 进行验证
+	// - 强制重置模式（NeedResetPassword=true）：可省略 old_password，直接设置新密码
+	//
+	// 安全特性：
+	// - 旧密码验证使用 BCrypt
+	// - 新密码必须满足强度要求（至少6位，包含字母和数字）
+	// - 新密码不能与旧密码相同
+	ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -154,12 +197,20 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("PasswordLogin")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceChangePasswordHandler := connect.NewUnaryHandler(
+		AuthServiceChangePasswordProcedure,
+		svc.ChangePassword,
+		connect.WithSchema(authServiceMethods.ByName("ChangePassword")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/beacon.sso.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceRegisterByEmailProcedure:
 			authServiceRegisterByEmailHandler.ServeHTTP(w, r)
 		case AuthServicePasswordLoginProcedure:
 			authServicePasswordLoginHandler.ServeHTTP(w, r)
+		case AuthServiceChangePasswordProcedure:
+			authServiceChangePasswordHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -175,4 +226,8 @@ func (UnimplementedAuthServiceHandler) RegisterByEmail(context.Context, *connect
 
 func (UnimplementedAuthServiceHandler) PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.AuthService.PasswordLogin is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.AuthService.ChangePassword is not implemented"))
 }

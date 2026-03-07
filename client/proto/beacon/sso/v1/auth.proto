@@ -62,6 +62,22 @@ message PasswordLoginResponse {
   optional string id_token = 16;
 }
 
+// ChangePasswordRequest 修改密码请求
+message ChangePasswordRequest {
+  // 用户 ID（雪花 ID 格式）
+  string user_id = 1;
+  // 旧密码（强制重置模式下可省略）
+  optional string old_password = 2;
+  // 新密码（至少 6 位且包含字母和数字）
+  string new_password = 3;
+}
+
+// ChangePasswordResponse 修改密码响应
+message ChangePasswordResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+}
+
 // AuthService 认证服务（需要 App 认证）
 //
 // 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证：
@@ -91,4 +107,19 @@ service AuthService {
   // - 复用现有的密码验证逻辑（BCrypt）
   // - 复用现有的账户锁定机制
   rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
+
+  // ChangePassword 修改用户密码
+  //
+  // 该方法允许已认证的应用为用户修改密码。
+  // 普通模式需要验证旧密码，强制重置模式可跳过旧密码验证。
+  //
+  // 模式说明：
+  // - 普通模式（NeedResetPassword=false）：必须提供 old_password 进行验证
+  // - 强制重置模式（NeedResetPassword=true）：可省略 old_password，直接设置新密码
+  //
+  // 安全特性：
+  // - 旧密码验证使用 BCrypt
+  // - 新密码必须满足强度要求（至少6位，包含字母和数字）
+  // - 新密码不能与旧密码相同
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
 }

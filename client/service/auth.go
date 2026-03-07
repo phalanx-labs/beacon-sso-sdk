@@ -97,3 +97,38 @@ func (s *AuthService) PasswordLogin(ctx context.Context, req *pb.PasswordLoginRe
 	// 转换响应
 	return resp.Msg, nil
 }
+
+// ChangePassword 修改用户密码
+//
+// 该方法允许已认证的应用为用户修改密码。
+// 普通模式需要验证旧密码，强制重置模式可跳过旧密码验证。
+//
+// 模式说明：
+//   - 普通模式（NeedResetPassword=false）：必须提供 old_password 进行验证
+//   - 强制重置模式（NeedResetPassword=true）：可省略 old_password，直接设置新密码
+func (s *AuthService) ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error) {
+	// 验证数据
+	if req.UserId == "" {
+		return nil, fmt.Errorf("user_id 不能为空")
+	}
+	if req.NewPassword == "" {
+		return nil, fmt.Errorf("new_password 不能为空")
+	}
+
+	// 构建 proto 请求
+	protoReq := connect.NewRequest(req)
+
+	// 添加 headers (App 认证凭证)
+	for k, v := range s.headers {
+		protoReq.Header().Set(k, v)
+	}
+
+	// 调用 proto client
+	resp, err := s.client.ChangePassword(ctx, protoReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换响应
+	return resp.Msg, nil
+}
