@@ -36,6 +36,9 @@ const (
 	// AuthServiceRegisterByEmailProcedure is the fully-qualified name of the AuthService's
 	// RegisterByEmail RPC.
 	AuthServiceRegisterByEmailProcedure = "/beacon.sso.v1.AuthService/RegisterByEmail"
+	// AuthServicePasswordLoginProcedure is the fully-qualified name of the AuthService's PasswordLogin
+	// RPC.
+	AuthServicePasswordLoginProcedure = "/beacon.sso.v1.AuthService/PasswordLogin"
 )
 
 // AuthServiceClient is a client for the beacon.sso.v1.AuthService service.
@@ -51,6 +54,17 @@ type AuthServiceClient interface {
 	// 5. 绑定邮箱并标记为已验证
 	// 6. 生成登录 Token
 	RegisterByEmail(context.Context, *connect.Request[v1.RegisterByEmailRequest]) (*connect.Response[v1.RegisterByEmailResponse], error)
+	// PasswordLogin 密码登录（Resource Owner Password Credentials Grant）
+	//
+	// 该方法实现了 OAuth 2.0 Password Grant，允许受信任的第一方客户端
+	// 直接使用用户名和密码换取 Token。
+	//
+	// 安全特性：
+	// - 仅限第一方应用使用（App.FirstParty = enabled）
+	// - 支持用户名/邮箱/手机号三种登录方式（自动识别）
+	// - 复用现有的密码验证逻辑（BCrypt）
+	// - 复用现有的账户锁定机制
+	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the beacon.sso.v1.AuthService service. By default,
@@ -70,17 +84,29 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("RegisterByEmail")),
 			connect.WithClientOptions(opts...),
 		),
+		passwordLogin: connect.NewClient[v1.PasswordLoginRequest, v1.PasswordLoginResponse](
+			httpClient,
+			baseURL+AuthServicePasswordLoginProcedure,
+			connect.WithSchema(authServiceMethods.ByName("PasswordLogin")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
 	registerByEmail *connect.Client[v1.RegisterByEmailRequest, v1.RegisterByEmailResponse]
+	passwordLogin   *connect.Client[v1.PasswordLoginRequest, v1.PasswordLoginResponse]
 }
 
 // RegisterByEmail calls beacon.sso.v1.AuthService.RegisterByEmail.
 func (c *authServiceClient) RegisterByEmail(ctx context.Context, req *connect.Request[v1.RegisterByEmailRequest]) (*connect.Response[v1.RegisterByEmailResponse], error) {
 	return c.registerByEmail.CallUnary(ctx, req)
+}
+
+// PasswordLogin calls beacon.sso.v1.AuthService.PasswordLogin.
+func (c *authServiceClient) PasswordLogin(ctx context.Context, req *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error) {
+	return c.passwordLogin.CallUnary(ctx, req)
 }
 
 // AuthServiceHandler is an implementation of the beacon.sso.v1.AuthService service.
@@ -96,6 +122,17 @@ type AuthServiceHandler interface {
 	// 5. 绑定邮箱并标记为已验证
 	// 6. 生成登录 Token
 	RegisterByEmail(context.Context, *connect.Request[v1.RegisterByEmailRequest]) (*connect.Response[v1.RegisterByEmailResponse], error)
+	// PasswordLogin 密码登录（Resource Owner Password Credentials Grant）
+	//
+	// 该方法实现了 OAuth 2.0 Password Grant，允许受信任的第一方客户端
+	// 直接使用用户名和密码换取 Token。
+	//
+	// 安全特性：
+	// - 仅限第一方应用使用（App.FirstParty = enabled）
+	// - 支持用户名/邮箱/手机号三种登录方式（自动识别）
+	// - 复用现有的密码验证逻辑（BCrypt）
+	// - 复用现有的账户锁定机制
+	PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -111,10 +148,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("RegisterByEmail")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServicePasswordLoginHandler := connect.NewUnaryHandler(
+		AuthServicePasswordLoginProcedure,
+		svc.PasswordLogin,
+		connect.WithSchema(authServiceMethods.ByName("PasswordLogin")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/beacon.sso.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceRegisterByEmailProcedure:
 			authServiceRegisterByEmailHandler.ServeHTTP(w, r)
+		case AuthServicePasswordLoginProcedure:
+			authServicePasswordLoginHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -126,4 +171,8 @@ type UnimplementedAuthServiceHandler struct{}
 
 func (UnimplementedAuthServiceHandler) RegisterByEmail(context.Context, *connect.Request[v1.RegisterByEmailRequest]) (*connect.Response[v1.RegisterByEmailResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.AuthService.RegisterByEmail is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) PasswordLogin(context.Context, *connect.Request[v1.PasswordLoginRequest]) (*connect.Response[v1.PasswordLoginResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.AuthService.PasswordLogin is not implemented"))
 }

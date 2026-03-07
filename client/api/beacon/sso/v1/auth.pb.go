@@ -168,6 +168,188 @@ func (x *RegisterByEmailResponse) GetToken() string {
 	return ""
 }
 
+// PasswordLoginRequest 密码登录请求（Resource Owner Password Credentials Grant）
+type PasswordLoginRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户标识（用户名、邮箱或手机号）
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	// 用户密码（明文）
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// 授权范围（必须包含 openid）
+	Scope string `protobuf:"bytes,3,opt,name=scope,proto3" json:"scope,omitempty"`
+	// 客户端 IP 地址（可选，用于安全审计）
+	ClientIp *string `protobuf:"bytes,4,opt,name=client_ip,json=clientIp,proto3,oneof" json:"client_ip,omitempty"`
+	// 客户端 User-Agent（可选，用于安全审计）
+	UserAgent     *string `protobuf:"bytes,5,opt,name=user_agent,json=userAgent,proto3,oneof" json:"user_agent,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PasswordLoginRequest) Reset() {
+	*x = PasswordLoginRequest{}
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PasswordLoginRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PasswordLoginRequest) ProtoMessage() {}
+
+func (x *PasswordLoginRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PasswordLoginRequest.ProtoReflect.Descriptor instead.
+func (*PasswordLoginRequest) Descriptor() ([]byte, []int) {
+	return file_beacon_sso_v1_auth_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PasswordLoginRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *PasswordLoginRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *PasswordLoginRequest) GetScope() string {
+	if x != nil {
+		return x.Scope
+	}
+	return ""
+}
+
+func (x *PasswordLoginRequest) GetClientIp() string {
+	if x != nil && x.ClientIp != nil {
+		return *x.ClientIp
+	}
+	return ""
+}
+
+func (x *PasswordLoginRequest) GetUserAgent() string {
+	if x != nil && x.UserAgent != nil {
+		return *x.UserAgent
+	}
+	return ""
+}
+
+// PasswordLoginResponse 密码登录响应
+type PasswordLoginResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 基础响应信息
+	BaseResponse *generate.BaseResponse `protobuf:"bytes,1,opt,name=base_response,json=baseResponse,proto3" json:"base_response,omitempty"`
+	// Access Token（UUID 格式）
+	AccessToken string `protobuf:"bytes,11,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// Token 类型（固定为 "Bearer"）
+	TokenType string `protobuf:"bytes,12,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
+	// Access Token 有效期（秒）
+	ExpiresIn int64 `protobuf:"varint,13,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty"`
+	// Refresh Token（UUID 格式）
+	RefreshToken *string `protobuf:"bytes,14,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	// 授权范围
+	Scope *string `protobuf:"bytes,15,opt,name=scope,proto3,oneof" json:"scope,omitempty"`
+	// ID Token（JWT 格式，scope 包含 openid 时返回）
+	IdToken       *string `protobuf:"bytes,16,opt,name=id_token,json=idToken,proto3,oneof" json:"id_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PasswordLoginResponse) Reset() {
+	*x = PasswordLoginResponse{}
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PasswordLoginResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PasswordLoginResponse) ProtoMessage() {}
+
+func (x *PasswordLoginResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PasswordLoginResponse.ProtoReflect.Descriptor instead.
+func (*PasswordLoginResponse) Descriptor() ([]byte, []int) {
+	return file_beacon_sso_v1_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PasswordLoginResponse) GetBaseResponse() *generate.BaseResponse {
+	if x != nil {
+		return x.BaseResponse
+	}
+	return nil
+}
+
+func (x *PasswordLoginResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *PasswordLoginResponse) GetTokenType() string {
+	if x != nil {
+		return x.TokenType
+	}
+	return ""
+}
+
+func (x *PasswordLoginResponse) GetExpiresIn() int64 {
+	if x != nil {
+		return x.ExpiresIn
+	}
+	return 0
+}
+
+func (x *PasswordLoginResponse) GetRefreshToken() string {
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
+	}
+	return ""
+}
+
+func (x *PasswordLoginResponse) GetScope() string {
+	if x != nil && x.Scope != nil {
+		return *x.Scope
+	}
+	return ""
+}
+
+func (x *PasswordLoginResponse) GetIdToken() string {
+	if x != nil && x.IdToken != nil {
+		return *x.IdToken
+	}
+	return ""
+}
+
 var File_beacon_sso_v1_auth_proto protoreflect.FileDescriptor
 
 const file_beacon_sso_v1_auth_proto_rawDesc = "" +
@@ -182,9 +364,33 @@ const file_beacon_sso_v1_auth_proto_rawDesc = "" +
 	"\x17RegisterByEmailResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12\x17\n" +
 	"\auser_id\x18\v \x01(\tR\x06userId\x12\x14\n" +
-	"\x05token\x18\f \x01(\tR\x05token2o\n" +
+	"\x05token\x18\f \x01(\tR\x05token\"\xc7\x01\n" +
+	"\x14PasswordLoginRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x14\n" +
+	"\x05scope\x18\x03 \x01(\tR\x05scope\x12 \n" +
+	"\tclient_ip\x18\x04 \x01(\tH\x00R\bclientIp\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"user_agent\x18\x05 \x01(\tH\x01R\tuserAgent\x88\x01\x01B\f\n" +
+	"\n" +
+	"_client_ipB\r\n" +
+	"\v_user_agent\"\xc0\x02\n" +
+	"\x15PasswordLoginResponse\x128\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12!\n" +
+	"\faccess_token\x18\v \x01(\tR\vaccessToken\x12\x1d\n" +
+	"\n" +
+	"token_type\x18\f \x01(\tR\ttokenType\x12\x1d\n" +
+	"\n" +
+	"expires_in\x18\r \x01(\x03R\texpiresIn\x12(\n" +
+	"\rrefresh_token\x18\x0e \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12\x19\n" +
+	"\x05scope\x18\x0f \x01(\tH\x01R\x05scope\x88\x01\x01\x12\x1e\n" +
+	"\bid_token\x18\x10 \x01(\tH\x02R\aidToken\x88\x01\x01B\x10\n" +
+	"\x0e_refresh_tokenB\b\n" +
+	"\x06_scopeB\v\n" +
+	"\t_id_token2\xcb\x01\n" +
 	"\vAuthService\x12`\n" +
-	"\x0fRegisterByEmail\x12%.beacon.sso.v1.RegisterByEmailRequest\x1a&.beacon.sso.v1.RegisterByEmailResponseBDZBgithub.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pbb\x06proto3"
+	"\x0fRegisterByEmail\x12%.beacon.sso.v1.RegisterByEmailRequest\x1a&.beacon.sso.v1.RegisterByEmailResponse\x12Z\n" +
+	"\rPasswordLogin\x12#.beacon.sso.v1.PasswordLoginRequest\x1a$.beacon.sso.v1.PasswordLoginResponseBDZBgithub.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pbb\x06proto3"
 
 var (
 	file_beacon_sso_v1_auth_proto_rawDescOnce sync.Once
@@ -198,21 +404,26 @@ func file_beacon_sso_v1_auth_proto_rawDescGZIP() []byte {
 	return file_beacon_sso_v1_auth_proto_rawDescData
 }
 
-var file_beacon_sso_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_beacon_sso_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_beacon_sso_v1_auth_proto_goTypes = []any{
 	(*RegisterByEmailRequest)(nil),  // 0: beacon.sso.v1.RegisterByEmailRequest
 	(*RegisterByEmailResponse)(nil), // 1: beacon.sso.v1.RegisterByEmailResponse
-	(*generate.BaseResponse)(nil),   // 2: xBase.BaseResponse
+	(*PasswordLoginRequest)(nil),    // 2: beacon.sso.v1.PasswordLoginRequest
+	(*PasswordLoginResponse)(nil),   // 3: beacon.sso.v1.PasswordLoginResponse
+	(*generate.BaseResponse)(nil),   // 4: xBase.BaseResponse
 }
 var file_beacon_sso_v1_auth_proto_depIdxs = []int32{
-	2, // 0: beacon.sso.v1.RegisterByEmailResponse.base_response:type_name -> xBase.BaseResponse
-	0, // 1: beacon.sso.v1.AuthService.RegisterByEmail:input_type -> beacon.sso.v1.RegisterByEmailRequest
-	1, // 2: beacon.sso.v1.AuthService.RegisterByEmail:output_type -> beacon.sso.v1.RegisterByEmailResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	4, // 0: beacon.sso.v1.RegisterByEmailResponse.base_response:type_name -> xBase.BaseResponse
+	4, // 1: beacon.sso.v1.PasswordLoginResponse.base_response:type_name -> xBase.BaseResponse
+	0, // 2: beacon.sso.v1.AuthService.RegisterByEmail:input_type -> beacon.sso.v1.RegisterByEmailRequest
+	2, // 3: beacon.sso.v1.AuthService.PasswordLogin:input_type -> beacon.sso.v1.PasswordLoginRequest
+	1, // 4: beacon.sso.v1.AuthService.RegisterByEmail:output_type -> beacon.sso.v1.RegisterByEmailResponse
+	3, // 5: beacon.sso.v1.AuthService.PasswordLogin:output_type -> beacon.sso.v1.PasswordLoginResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_beacon_sso_v1_auth_proto_init() }
@@ -220,13 +431,15 @@ func file_beacon_sso_v1_auth_proto_init() {
 	if File_beacon_sso_v1_auth_proto != nil {
 		return
 	}
+	file_beacon_sso_v1_auth_proto_msgTypes[2].OneofWrappers = []any{}
+	file_beacon_sso_v1_auth_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_beacon_sso_v1_auth_proto_rawDesc), len(file_beacon_sso_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

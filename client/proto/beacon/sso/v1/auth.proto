@@ -30,6 +30,38 @@ message RegisterByEmailResponse {
   string token = 12;
 }
 
+// PasswordLoginRequest 密码登录请求（Resource Owner Password Credentials Grant）
+message PasswordLoginRequest {
+  // 用户标识（用户名、邮箱或手机号）
+  string username = 1;
+  // 用户密码（明文）
+  string password = 2;
+  // 授权范围（必须包含 openid）
+  string scope = 3;
+  // 客户端 IP 地址（可选，用于安全审计）
+  optional string client_ip = 4;
+  // 客户端 User-Agent（可选，用于安全审计）
+  optional string user_agent = 5;
+}
+
+// PasswordLoginResponse 密码登录响应
+message PasswordLoginResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // Access Token（UUID 格式）
+  string access_token = 11;
+  // Token 类型（固定为 "Bearer"）
+  string token_type = 12;
+  // Access Token 有效期（秒）
+  int64 expires_in = 13;
+  // Refresh Token（UUID 格式）
+  optional string refresh_token = 14;
+  // 授权范围
+  optional string scope = 15;
+  // ID Token（JWT 格式，scope 包含 openid 时返回）
+  optional string id_token = 16;
+}
+
 // AuthService 认证服务（需要 App 认证）
 //
 // 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证：
@@ -47,4 +79,16 @@ service AuthService {
   // 5. 绑定邮箱并标记为已验证
   // 6. 生成登录 Token
   rpc RegisterByEmail(RegisterByEmailRequest) returns (RegisterByEmailResponse);
+
+  // PasswordLogin 密码登录（Resource Owner Password Credentials Grant）
+  //
+  // 该方法实现了 OAuth 2.0 Password Grant，允许受信任的第一方客户端
+  // 直接使用用户名和密码换取 Token。
+  //
+  // 安全特性：
+  // - 仅限第一方应用使用（App.FirstParty = enabled）
+  // - 支持用户名/邮箱/手机号三种登录方式（自动识别）
+  // - 复用现有的密码验证逻辑（BCrypt）
+  // - 复用现有的账户锁定机制
+  rpc PasswordLogin(PasswordLoginRequest) returns (PasswordLoginResponse);
 }

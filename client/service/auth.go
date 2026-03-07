@@ -59,3 +59,41 @@ func (s *AuthService) RegisterByEmail(ctx context.Context, req *pb.RegisterByEma
 	// 转换响应
 	return resp.Msg, nil
 }
+
+// PasswordLogin 密码登录（Resource Owner Password Credentials Grant）
+//
+// 该方法实现了 OAuth 2.0 Password Grant，允许受信任的第一方客户端
+// 直接使用用户名和密码换取 Token。
+//
+// 安全特性：
+// - 仅限第一方应用使用（App.FirstParty = enabled）
+// - 支持用户名/邮箱/手机号三种登录方式（自动识别）
+func (s *AuthService) PasswordLogin(ctx context.Context, req *pb.PasswordLoginRequest) (*pb.PasswordLoginResponse, error) {
+	// 验证数据
+	if req.Username == "" {
+		return nil, fmt.Errorf("username 不能为空")
+	}
+	if req.Password == "" {
+		return nil, fmt.Errorf("password 不能为空")
+	}
+	if req.Scope == "" {
+		return nil, fmt.Errorf("scope 不能为空")
+	}
+
+	// 构建 proto 请求
+	protoReq := connect.NewRequest(req)
+
+	// 添加 headers (App 认证凭证)
+	for k, v := range s.headers {
+		protoReq.Header().Set(k, v)
+	}
+
+	// 调用 proto client
+	resp, err := s.client.PasswordLogin(ctx, protoReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换响应
+	return resp.Msg, nil
+}
