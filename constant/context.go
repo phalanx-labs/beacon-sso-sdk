@@ -5,4 +5,5 @@ import xCtx "github.com/bamboo-services/bamboo-base-go/defined/context"
 const (
 	CtxOAuthConfig      xCtx.ContextKey = "oauth_config"       // OAuth 配置上下文键
 	CtxOAuthUserinfoURI xCtx.ContextKey = "oauth_userinfo_uri" // OAuth 用户信息 URI 上下文键
+	CtxSsoClient        xCtx.ContextKey = "sso_client"         // SsoClient 上下文键
 )

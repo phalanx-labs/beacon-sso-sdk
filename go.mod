@@ -4,10 +4,10 @@ go 1.25.3
 
 require (
 	connectrpc.com/connect v1.19.1
-	github.com/bamboo-services/bamboo-base-go/common v1.0.0-202602242007
-	github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202602241921
-	github.com/bamboo-services/bamboo-base-go/major v1.0.0-202602241924
-	github.com/bamboo-services/bamboo-base-go/plugins/grpc v1.0.0-202602241924
+	github.com/bamboo-services/bamboo-base-go/common v1.0.0-202603081522
+	github.com/bamboo-services/bamboo-base-go/defined v1.0.0-202603081546
+	github.com/bamboo-services/bamboo-base-go/major v1.0.0-202603081523
+	github.com/bamboo-services/bamboo-base-go/plugins/grpc v1.0.0-202603081523
 	github.com/gin-gonic/gin v1.12.0
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/redis/go-redis/v9 v9.18.0
@@ -51,5 +51,4 @@ require (
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
-	google.golang.org/grpc v1.79.1 // indirect
 )

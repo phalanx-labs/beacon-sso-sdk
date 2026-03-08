@@ -5,6 +5,7 @@ import (
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
+	bSdkClient "github.com/phalanx-labs/beacon-sso-sdk/client"
 	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	"golang.org/x/oauth2"
 )
@@ -45,6 +46,27 @@ func GetOAuthConfig(ctx context.Context) *oauth2.Config {
 // 如果获取失败，程序将 panic，通常意味着中间件配置缺失或执行顺序错误。
 func GetOAuthUserinfoURI(ctx context.Context) string {
 	get, err := xCtxUtil.Get[string](ctx, bSdkConst.CtxOAuthUserinfoURI)
+	if err != nil {
+		xLog.WithName(xLog.NamedUTIL).Error(ctx, err.ErrorMessage.String())
+		panic(err.ErrorMessage.String())
+	}
+	return get
+}
+
+// GetSsoClient 从上下文中检索 SsoClient 实例
+//
+// 该函数尝试从传入的上下文（context）中获取已注入的 `SsoClient` 对象。
+// 它常用于调用 gRPC 认证服务的业务逻辑中。
+//
+// 参数说明:
+//   - ctx: 请求上下文对象，必须包含 `bSdkConst.CtxSsoClient` 键值。
+//
+// 返回值:
+//   - *bSdkClient.SsoClient: 从上下文中提取的 SsoClient 实例。如果实例不存在则引发 panic。
+//
+// 注意: 如果在上下文中找不到对应的客户端（即注入失败），该函数会记录错误日志并 panic。
+func GetSsoClient(ctx context.Context) *bSdkClient.SsoClient {
+	get, err := xCtxUtil.Get[*bSdkClient.SsoClient](ctx, bSdkConst.CtxSsoClient)
 	if err != nil {
 		xLog.WithName(xLog.NamedUTIL).Error(ctx, err.ErrorMessage.String())
 		panic(err.ErrorMessage.String())

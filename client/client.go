@@ -32,13 +32,14 @@ func WithAppAccess(appAccessID, appSecretKey string) Option {
 	}
 }
 
-// WithProtoClient 直接传入 proto client（用于测试）
+// WithProtoPublicClient 直接传入 proto client（用于测试）
 func WithProtoPublicClient(protoClient pbconnect.PublicServiceClient) Option {
 	return func(c *SsoClient) {
 		c.protoPublicClient = protoClient
 	}
 }
 
+// WithProtoAuthClient 直接传入 proto client（用于测试）
 func WithProtoAuthClient(protoClient pbconnect.AuthServiceClient) Option {
 	return func(c *SsoClient) {
 		c.protoAuthClient = protoClient

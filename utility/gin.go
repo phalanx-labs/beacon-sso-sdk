@@ -1,7 +1,7 @@
 package bSdkUtil
 
 import (
-	xHttp "github.com/bamboo-services/bamboo-base-go/major/http"
+	xHttp "github.com/bamboo-services/bamboo-base-go/defined/http"
 	"github.com/gin-gonic/gin"
 )
 

@@ -14,21 +14,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// NewOAuthConfig 初始化并返回 OAuth2 及重定向 URI 的依赖注入节点列表。
-//
-// 该函数聚合了 `oAuthConfig` (包含 ClientID、Endpoint 等核心配置) 和
-// `oAuthRedirectURI` (包含重定向地址) 的注册节点，用于在应用启动时
-// 批量注册 SSO 相关的上下文键值。
-//
-// 返回值:
-//   - 包含所有已定义 OAuth 注册节点的切片。
-func NewOAuthConfig() []xRegNode.RegNodeList {
-	regNode := make([]xRegNode.RegNodeList, 0)
-	regNode = append(regNode, oAuthConfig())
-	regNode = append(regNode, oAuthRedirectURI())
-	return regNode
-}
-
 // oAuthConfig 初始化 OAuth2 配置并注册依赖项。
 //
 // 该函数负责从环境变量或 Well-Known 元数据端点加载 OAuth2 客户端所需的配置信息，

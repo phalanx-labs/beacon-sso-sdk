@@ -13,6 +13,7 @@ import (
 // 通常在 `registerService` 方法中初始化并注入到处理器中。
 type service struct {
 	oauthLogic *bSdkLogic.OAuthLogic
+	authLogic  *bSdkLogic.AuthLogic
 }
 
 // handler 是应用程序的 HTTP 处理器结构体。
@@ -33,6 +34,7 @@ type handler struct {
 func (h *handler) registerService(ctx context.Context) {
 	h.service = &service{
 		oauthLogic: bSdkLogic.NewOAuth(ctx),
+		authLogic:  bSdkLogic.NewAuth(ctx),
 	}
 }
 

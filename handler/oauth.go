@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
-	xHttp "github.com/bamboo-services/bamboo-base-go/major/http"
+	xHttp "github.com/bamboo-services/bamboo-base-go/defined/http"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"

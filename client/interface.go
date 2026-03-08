@@ -48,4 +48,40 @@ type IAuth interface {
 	//   - *pb.RegisterByEmailResponse: 包含用户 ID 和登录 Token。
 	//   - error: 如果注册失败（如验证码错误、邮箱已注册），则返回非 nil 的错误。
 	RegisterByEmail(ctx context.Context, req *pb.RegisterByEmailRequest) (*pb.RegisterByEmailResponse, error)
+
+	// PasswordLogin 密码登录（Resource Owner Password Credentials Grant）
+	//
+	// 该方法实现了 OAuth 2.0 Password Grant，允许受信任的第一方客户端
+	// 直接使用用户名和密码换取 Token。
+	//
+	// 安全特性：
+	// - 仅限第一方应用使用（App.FirstParty = enabled）
+	// - 支持用户名/邮箱/手机号三种登录方式（自动识别）
+	//
+	// 参数说明:
+	//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+	//   - req: 密码登录请求，包含用户名、密码和权限范围。
+	//
+	// 返回值:
+	//   - *pb.PasswordLoginResponse: 包含访问令牌、刷新令牌等信息。
+	//   - error: 如果登录失败（如凭证无效），则返回非 nil 的错误。
+	PasswordLogin(ctx context.Context, req *pb.PasswordLoginRequest) (*pb.PasswordLoginResponse, error)
+
+	// ChangePassword 修改用户密码
+	//
+	// 该方法允许已认证的应用为用户修改密码。
+	// 普通模式需要验证旧密码，强制重置模式可跳过旧密码验证。
+	//
+	// 模式说明：
+	//   - 普通模式（NeedResetPassword=false）：必须提供 old_password 进行验证
+	//   - 强制重置模式（NeedResetPassword=true）：可省略 old_password，直接设置新密码
+	//
+	// 参数说明:
+	//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+	//   - req: 修改密码请求，包含用户 ID、旧密码和新密码。
+	//
+	// 返回值:
+	//   - *pb.ChangePasswordResponse: 包含基础响应信息。
+	//   - error: 如果修改失败（如旧密码错误），则返回非 nil 的错误。
+	ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error)
 }

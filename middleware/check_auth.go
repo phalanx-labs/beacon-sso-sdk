@@ -5,7 +5,7 @@ import (
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	xHttp "github.com/bamboo-services/bamboo-base-go/major/http"
+	xHttp "github.com/bamboo-services/bamboo-base-go/defined/http"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
 	bSdkLogic "github.com/phalanx-labs/beacon-sso-sdk/logic"
