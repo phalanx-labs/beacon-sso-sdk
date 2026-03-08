@@ -59,6 +59,7 @@ proto: proto-init
 proto-all: proto-init
 	buf generate --path client/proto/beacon/sso/v1/public.proto
 	buf generate --path client/proto/beacon/sso/v1/auth.proto
+	buf generate --path client/proto/beacon/sso/v1/merchant_service.proto
 	@echo "✅ 所有 proto 文件生成完成"
 
 tidy:

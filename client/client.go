@@ -46,15 +46,25 @@ func WithProtoAuthClient(protoClient pbconnect.AuthServiceClient) Option {
 	}
 }
 
+// WithProtoMerchantClient 直接传入 proto client（用于测试）
+func WithProtoMerchantClient(protoClient pbconnect.MerchantServiceClient) Option {
+	return func(c *SsoClient) {
+		c.protoMerchantClient = protoClient
+	}
+}
+
 // SsoClient SSO SDK 客户端
 type SsoClient struct {
-	host              string
-	port              string
-	headers           map[string]string
-	protoPublicClient pbconnect.PublicServiceClient
-	protoAuthClient   pbconnect.AuthServiceClient
-	Public            IPublic
-	Auth              IAuth
+	host                string
+	port                string
+	headers             map[string]string
+	h2cClient           *http.Client
+	protoPublicClient   pbconnect.PublicServiceClient
+	protoAuthClient     pbconnect.AuthServiceClient
+	protoMerchantClient pbconnect.MerchantServiceClient
+	Public              IPublic
+	Auth                IAuth
+	Merchant            IMerchant
 }
 
 // NewClient 创建并返回一个新的 SsoClient 实例
@@ -79,22 +89,41 @@ func NewClient(opts ...Option) *SsoClient {
 		opt(c)
 	}
 
-	// 如果没有传入 proto client，则创建
+	// 如果没有传入 proto client，则创建共享的 h2cClient 和各服务的 proto client
 	if c.protoPublicClient == nil && c.protoAuthClient == nil {
-		c.protoPublicClient = c.createProtoPublicClient()
-		c.protoAuthClient = c.createProtoAuthClient()
+		// 创建共享的 h2c HTTP 客户端（只初始化一次）
+		c.h2cClient = c.createH2CClient()
+		baseURL := fmt.Sprintf("http://%s:%s", c.host, c.port)
+
+		// 使用共享的 h2cClient 创建各服务的 proto client
+		c.protoPublicClient = pbconnect.NewPublicServiceClient(
+			c.h2cClient,
+			baseURL,
+			connect.WithGRPC(),
+		)
+		c.protoAuthClient = pbconnect.NewAuthServiceClient(
+			c.h2cClient,
+			baseURL,
+			connect.WithGRPC(),
+		)
+		c.protoMerchantClient = pbconnect.NewMerchantServiceClient(
+			c.h2cClient,
+			baseURL,
+			connect.WithGRPC(),
+		)
 	}
 
 	// 创建服务封装
 	c.Public = service2.NewPublicService(c.protoPublicClient, c.headers)
 	c.Auth = service2.NewAuthService(c.protoAuthClient, c.headers)
+	c.Merchant = service2.NewMerchantService(c.protoMerchantClient, c.headers)
 
 	return c
 }
 
-// createProtoPublicClient 创建 h2c proto client for PublicService
-func (c *SsoClient) createProtoPublicClient() pbconnect.PublicServiceClient {
-	h2cClient := &http.Client{
+// createH2CClient 创建共享的 h2c HTTP 客户端
+func (c *SsoClient) createH2CClient() *http.Client {
+	return &http.Client{
 		Transport: &http2.Transport{
 			AllowHTTP: true,
 			DialTLSContext: func(_ context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
@@ -103,27 +132,4 @@ func (c *SsoClient) createProtoPublicClient() pbconnect.PublicServiceClient {
 			},
 		},
 	}
-	return pbconnect.NewPublicServiceClient(
-		h2cClient,
-		fmt.Sprintf("http://%s:%s", c.host, c.port),
-		connect.WithGRPC(),
-	)
-}
-
-// createProtoAuthClient 创建 h2c proto client for AuthService
-func (c *SsoClient) createProtoAuthClient() pbconnect.AuthServiceClient {
-	h2cClient := &http.Client{
-		Transport: &http2.Transport{
-			AllowHTTP: true,
-			DialTLSContext: func(_ context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
-				var d net.Dialer
-				return d.Dial(network, addr)
-			},
-		},
-	}
-	return pbconnect.NewAuthServiceClient(
-		h2cClient,
-		fmt.Sprintf("http://%s:%s", c.host, c.port),
-		connect.WithGRPC(),
-	)
 }

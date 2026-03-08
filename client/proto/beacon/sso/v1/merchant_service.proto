@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package beacon.sso.v1;
+
+import "link/base.proto";
+
+option go_package = "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pb";
+
+// ==================== 标签相关消息 ====================
+
+// MerchantTag 商户标签信息
+message MerchantTag {
+  // 标签 ID（雪花 ID 格式）
+  string id = 1;
+  // 标签代码（用于匹配，仅允许字母数字下划线）
+  string code = 2;
+  // 标签名称（展示用）
+  string name = 3;
+  // 标签描述
+  optional string description = 4;
+  // 颜色代码（HEX 格式）
+  optional string color = 5;
+  // 图标标识
+  optional string icon = 6;
+  // 排序权重
+  int32 sort_order = 7;
+  // 状态（0 禁用 / 1 启用）
+  int32 status = 8;
+}
+
+// GetMerchantTagsRequest 获取商户标签列表请求
+message GetMerchantTagsRequest {
+  // 是否仅返回启用的标签
+  optional bool enabled_only = 1;
+}
+
+// GetMerchantTagsResponse 获取商户标签列表响应
+message GetMerchantTagsResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // 标签列表
+  repeated MerchantTag tags = 11;
+}
+
+// GetUserTagsRequest 获取用户标签列表请求
+message GetUserTagsRequest {
+  // 用户 ID（雪花 ID 格式）
+  string user_id = 1;
+  // 是否仅返回启用的标签
+  optional bool enabled_only = 2;
+}
+
+// GetUserTagsResponse 获取用户标签列表响应
+message GetUserTagsResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // 标签列表
+  repeated MerchantTag tags = 11;
+}
+
+// CheckUserHasTagRequest 检查用户是否有指定标签请求
+message CheckUserHasTagRequest {
+  // 用户 ID（雪花 ID 格式）
+  string user_id = 1;
+  // 标签代码（用于匹配）
+  string tag_code = 2;
+}
+
+// CheckUserHasTagResponse 检查用户是否有指定标签响应
+message CheckUserHasTagResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // 用户是否拥有该标签
+  bool has_tag = 11;
+}
+
+// ==================== 公告相关消息 ====================
+
+// MerchantAnnouncement 商户公告信息
+message MerchantAnnouncement {
+  // 公告 ID（雪花 ID 格式）
+  string id = 1;
+  // 公告标题
+  string title = 2;
+  // 公告内容
+  string content = 3;
+  // 公告范围（1 商户 / 2 应用）
+  int32 scope = 4;
+  // 展示截止时间（RFC3339 格式）
+  optional string display_until = 5;
+  // 创建时间（RFC3339 格式）
+  string created_at = 6;
+}
+
+// AnnouncementListMeta 公告列表元信息（用于客户端判断是否需要重新展示）
+message AnnouncementListMeta {
+  // 所有公告内容的 MD5 哈希值（用于快速判断是否有变化）
+  string md5_hash = 1;
+  // 所有公告内容的 SHA256 哈希值（用于精确判断）
+  string sha256_hash = 2;
+  // 公告数量
+  int32 count = 3;
+  // 生成时间（RFC3339 格式）
+  string generated_at = 4;
+}
+
+// GetRecentAnnouncementsRequest 获取最近公告请求
+message GetRecentAnnouncementsRequest {
+  // 最大返回数量（默认 10，最大 20）
+  optional int32 limit = 1;
+  // 是否仅返回未过期的公告
+  optional bool active_only = 2;
+}
+
+// GetRecentAnnouncementsResponse 获取最近公告响应
+message GetRecentAnnouncementsResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // 公告列表（最多 10 条）
+  repeated MerchantAnnouncement announcements = 11;
+  // 列表元信息（包含哈希值用于客户端判断是否需要重新展示）
+  AnnouncementListMeta meta = 12;
+}
+
+// GetAnnouncementRequest 获取单个公告请求
+message GetAnnouncementRequest {
+  // 公告 ID（雪花 ID 格式）
+  string announcement_id = 1;
+}
+
+// GetAnnouncementResponse 获取单个公告响应
+message GetAnnouncementResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // 公告详情
+  MerchantAnnouncement announcement = 11;
+}
+
+// MerchantService 商户服务（需要 App 认证）
+//
+// 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证：
+// - app-access-id: App 的 Access ID
+// - app-secret-key: App 的 Secret Key
+service MerchantService {
+  // GetMerchantTags 获取当前应用所属商户的所有标签
+  //
+  // 返回应用所属商户下的所有标签列表，可用于客户端展示或标签匹配。
+  rpc GetMerchantTags(GetMerchantTagsRequest) returns (GetMerchantTagsResponse);
+
+  // GetUserTags 获取指定用户在当前商户的所有标签
+  //
+  // 根据用户 ID 获取该用户在当前应用所属商户下的所有标签。
+  rpc GetUserTags(GetUserTagsRequest) returns (GetUserTagsResponse);
+
+  // CheckUserHasTag 检查用户是否有指定标签
+  //
+  // 通过标签代码（code）快速检查用户是否拥有该标签。
+  rpc CheckUserHasTag(CheckUserHasTagRequest) returns (CheckUserHasTagResponse);
+
+  // GetRecentAnnouncements 获取最近公告列表
+  //
+  // 获取当前应用所属商户的最近公告（最多 10 条）。
+  // 返回结果包含 MD5 和 SHA256 哈希值，客户端可用于判断是否需要重新展示。
+  //
+  // 使用场景：
+  // - 客户端首次获取公告后，存储哈希值
+  // - 后续请求时，对比哈希值是否变化
+  // - 如果哈希值相同，说明公告无变化，可不展示
+  // - 如果哈希值不同，说明公告有更新，需要展示
+  rpc GetRecentAnnouncements(GetRecentAnnouncementsRequest) returns (GetRecentAnnouncementsResponse);
+
+  // GetAnnouncement 获取单个公告详情
+  //
+  // 根据公告 ID 获取详细信息。
+  rpc GetAnnouncement(GetAnnouncementRequest) returns (GetAnnouncementResponse);
+}

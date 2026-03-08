@@ -4,6 +4,7 @@ import (
 	"context"
 
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
+	"github.com/phalanx-labs/beacon-sso-sdk/client/service"
 )
 
 // IPublic 定义了公共服务操作的标准接口
@@ -84,4 +85,37 @@ type IAuth interface {
 	//   - *pb.ChangePasswordResponse: 包含基础响应信息。
 	//   - error: 如果修改失败（如旧密码错误），则返回非 nil 的错误。
 	ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error)
+}
+
+// IMerchant 定义了商户服务操作的标准接口
+//
+// 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证：
+//   - app-access-id: App 的 Access ID
+//   - app-secret-key: App 的 Secret Key
+type IMerchant interface {
+	// GetMerchantTags 获取当前应用所属商户的所有标签
+	//
+	// 返回应用所属商户下的所有标签列表，可用于客户端展示或标签匹配。
+	GetMerchantTags(ctx context.Context, req *service.GetMerchantTagsRequest) (*service.GetMerchantTagsResponse, error)
+
+	// GetUserTags 获取指定用户在当前商户的所有标签
+	//
+	// 根据用户 ID 获取该用户在当前应用所属商户下的所有标签。
+	GetUserTags(ctx context.Context, req *service.GetUserTagsRequest) (*service.GetUserTagsResponse, error)
+
+	// CheckUserHasTag 检查用户是否有指定标签
+	//
+	// 通过标签代码（code）快速检查用户是否拥有该标签。
+	CheckUserHasTag(ctx context.Context, req *service.CheckUserHasTagRequest) (*service.CheckUserHasTagResponse, error)
+
+	// GetRecentAnnouncements 获取最近公告列表
+	//
+	// 获取当前应用所属商户的最近公告（最多 10 条）。
+	// 返回结果包含 MD5 和 SHA256 哈希值，客户端可用于判断是否需要重新展示。
+	GetRecentAnnouncements(ctx context.Context, req *service.GetRecentAnnouncementsRequest) (*service.GetRecentAnnouncementsResponse, error)
+
+	// GetAnnouncement 获取单个公告详情
+	//
+	// 根据公告 ID 获取详细信息。
+	GetAnnouncement(ctx context.Context, req *service.GetAnnouncementRequest) (*service.GetAnnouncementResponse, error)
 }
