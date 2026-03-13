@@ -14,8 +14,6 @@ const (
 	EnvSsoEndpointRevocationURI    xEnv.EnvKey = "SSO_ENDPOINT_REVOCATION_URI"    // 单点登录令牌注销端点
 	EnvSsoBusinessCache            xEnv.EnvKey = "SSO_BUSINESS_CACHE"             // 业务函数缓存开关（true/false）
 
-	EnvSsoGrpcHost     xEnv.EnvKey = "SSO_GRPC_HOST"      // gRPC 主机地址
-	EnvSsoGrpcPort     xEnv.EnvKey = "SSO_GRPC_PORT"      // gRPC 端口
-	EnvSsoAppAccessID  xEnv.EnvKey = "SSO_APP_ACCESS_ID"  // App Access ID
-	EnvSsoAppSecretKey xEnv.EnvKey = "SSO_APP_SECRET_KEY" // App Secret Key
+	EnvSsoGrpcHost xEnv.EnvKey = "SSO_GRPC_HOST" // gRPC 主机地址
+	EnvSsoGrpcPort xEnv.EnvKey = "SSO_GRPC_PORT" // gRPC 端口
 )

@@ -33,23 +33,23 @@ func ssoClient() xRegNode.RegNodeList {
 			// 获取环境变量
 			host := xEnv.GetEnvString(bSdkConst.EnvSsoGrpcHost, "")
 			port := xEnv.GetEnvString(bSdkConst.EnvSsoGrpcPort, "")
-			appAccessID := xEnv.GetEnvString(bSdkConst.EnvSsoAppAccessID, "")
-			appSecretKey := xEnv.GetEnvString(bSdkConst.EnvSsoAppSecretKey, "")
+			appClientID := xEnv.GetEnvString(bSdkConst.EnvSsoClientID, "")
+			appClientSecret := xEnv.GetEnvString(bSdkConst.EnvSsoClientSecret, "")
 
 			// 校验配置
-			if host == "" || port == "" || appAccessID == "" || appSecretKey == "" {
+			if host == "" || port == "" || appClientID == "" || appClientSecret == "" {
 				xLog.Panic(ctx, "SSO gRPC 客户端配置缺失",
 					slog.String("host", host),
 					slog.String("port", port),
-					slog.String("app_access_id", appAccessID),
-					slog.String("app_secret_key", appSecretKey),
+					slog.String("app_client_id", appClientID),
+					slog.String("app_client_secret", appClientSecret),
 				)
 			}
 
 			// 创建 SsoClient
 			client := bSdkClient.NewClient(
 				bSdkClient.WithConnect(host, port),
-				bSdkClient.WithAppAccess(appAccessID, appSecretKey),
+				bSdkClient.WithAppAccess(appClientID, appClientSecret),
 			)
 
 			log.Info(ctx, "SsoClient 初始化成功",
