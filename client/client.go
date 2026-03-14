@@ -93,7 +93,7 @@ func NewClient(opts ...Option) *SsoClient {
 	if c.protoPublicClient == nil && c.protoAuthClient == nil {
 		// 创建共享的 h2c HTTP 客户端（只初始化一次）
 		c.h2cClient = c.createH2CClient()
-		baseURL := fmt.Sprintf("http://%s:%s", c.host, c.port)
+		baseURL := fmt.Sprintf("%s:%s", c.host, c.port)
 
 		// 使用共享的 h2cClient 创建各服务的 proto client
 		c.protoPublicClient = pbconnect.NewPublicServiceClient(
