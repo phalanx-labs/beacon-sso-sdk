@@ -2,10 +2,16 @@ package bSdkLogic
 
 import (
 	"context"
+	"log/slog"
+	"time"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
+	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
+	"github.com/gin-gonic/gin"
 	bSdkClient "github.com/phalanx-labs/beacon-sso-sdk/client"
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
+	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
+	bSdkRepo "github.com/phalanx-labs/beacon-sso-sdk/repository"
 	bSdkUtil "github.com/phalanx-labs/beacon-sso-sdk/utility"
 )
 
@@ -14,8 +20,9 @@ import (
 // 该结构体作为业务层的聚合器，整合了 SsoClient 的认证服务接口，
 // 用于处理用户注册、登录和密码修改等复杂逻辑。
 type AuthLogic struct {
-	log       *xLog.LogNamedLogger // 日志实例
-	ssoClient bSdkClient.IAuth     // SsoClient Auth 服务接口
+	log       *xLog.LogNamedLogger     // 日志实例
+	ssoClient bSdkClient.IAuth         // SsoClient Auth 服务接口
+	tokenData *bSdkRepo.OAuthTokenRepo // OAuth Token 数据仓储实例
 }
 
 // NewAuth 创建并初始化一个新的 AuthLogic 业务逻辑实例。
@@ -25,15 +32,19 @@ type AuthLogic struct {
 // 从而为认证流程提供完整的日志追踪能力。
 //
 // 参数:
-//   - ctx: 请求上下文，用于获取 SsoClient 实例。
+//   - ctx: 请求上下文，用于获取 SsoClient 实例、数据库和 Redis 实例。
 //
 // 返回值:
 //   - *AuthLogic: 配置完成的认证逻辑层实例指针。
 func NewAuth(ctx context.Context) *AuthLogic {
 	client := bSdkUtil.GetSsoClient(ctx)
+	db := xCtxUtil.MustGetDB(ctx)
+	rdb := xCtxUtil.MustGetRDB(ctx)
+
 	return &AuthLogic{
 		log:       xLog.WithName(xLog.NamedLOGC, "AuthLogic"),
 		ssoClient: client.Auth,
+		tokenData: bSdkRepo.NewOAuthTokenRepo(db, rdb),
 	}
 }
 
@@ -58,17 +69,41 @@ func (l *AuthLogic) RegisterByEmail(ctx context.Context, req *pb.RegisterByEmail
 //
 // 该方法封装了 gRPC 调用，实现了 OAuth 2.0 Password Grant，
 // 允许受信任的第一方客户端直接使用用户名和密码换取 Token。
+// 登录成功后会将 Token 缓存到 Redis，以支持后续的 Token 验证和刷新功能。
 //
 // 参数说明:
-//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+//   - ctx: Gin 上下文，用于控制请求的生命周期和超时控制。
 //   - req: 密码登录请求，包含用户名、密码和权限范围。
 //
 // 返回值:
 //   - *pb.PasswordLoginResponse: 包含访问令牌、刷新令牌等信息。
 //   - error: 如果登录失败（如凭证无效），则返回非 nil 的错误。
-func (l *AuthLogic) PasswordLogin(ctx context.Context, req *pb.PasswordLoginRequest) (*pb.PasswordLoginResponse, error) {
+func (l *AuthLogic) PasswordLogin(ctx *gin.Context, req *pb.PasswordLoginRequest) (*pb.PasswordLoginResponse, error) {
 	l.log.Info(ctx, "PasswordLogin - 处理密码登录请求")
-	return l.ssoClient.PasswordLogin(ctx, req)
+
+	// 调用 gRPC 服务
+	resp, err := l.ssoClient.PasswordLogin(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// 缓存令牌到 Redis，失败仅记录警告日志不阻断流程
+	if resp.AccessToken != "" {
+		expiry := time.Now().Add(time.Duration(resp.ExpiresIn) * time.Second)
+		cacheToken := &bSdkModels.CacheOAuthToken{
+			AccessToken:  resp.AccessToken,
+			TokenType:    resp.TokenType,
+			RefreshToken: resp.GetRefreshToken(),
+			Expiry:       expiry.Format(time.RFC3339),
+		}
+		if storeErr := l.tokenData.Store(ctx, cacheToken); storeErr != nil {
+			l.log.Warn(ctx, "PasswordLogin - 缓存令牌失败",
+				slog.String("error", storeErr.Error()),
+			)
+		}
+	}
+
+	return resp, nil
 }
 
 // ChangePassword 修改用户密码
