@@ -87,6 +87,25 @@ type IAuth interface {
 	ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error)
 }
 
+// IUser 定义了用户服务操作的标准接口
+//
+// 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证和用户 Token：
+//   - app-access-id: App 的 Access ID
+//   - app-secret-key: App 的 Secret Key
+//   - authorization: Bearer {token}
+type IUser interface {
+	// GetCurrentUser 获取当前登录用户的详细信息
+	//
+	// 参数说明:
+	//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+	//   - accessToken: 用户访问令牌（Bearer 格式或裸 Token）。
+	//
+	// 返回值:
+	//   - *pb.GetCurrentUserResponse: 用户信息响应。
+	//   - error: 获取失败时返回错误。
+	GetCurrentUser(ctx context.Context, accessToken string) (*pb.GetCurrentUserResponse, error)
+}
+
 // IMerchant 定义了商户服务操作的标准接口
 //
 // 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证：

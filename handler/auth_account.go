@@ -78,7 +78,7 @@ func (h *AccountHandler) RegisterByEmail(ctx *gin.Context) {
 	// 调用业务逻辑
 	resp, err := h.service.authLogic.RegisterByEmail(ctx, &req)
 	if err != nil {
-		_ = ctx.Error(xError.NewError(ctx, xError.OperationFailed, "注册失败", false, err))
+		_ = ctx.Error(xError.NewError(ctx, xError.OperationFailed, xError.ErrMessage(err.Error()), false, err))
 		return
 	}
 
@@ -129,7 +129,7 @@ func (h *AccountHandler) PasswordLogin(ctx *gin.Context) {
 	// 调用业务逻辑
 	resp, err := h.service.authLogic.PasswordLogin(ctx, &req)
 	if err != nil {
-		_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, "登录失败", false, err))
+		_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, xError.ErrMessage(err.Error()), false, err))
 		return
 	}
 
@@ -176,7 +176,7 @@ func (h *AccountHandler) ChangePassword(ctx *gin.Context) {
 	// 调用业务逻辑
 	resp, err := h.service.authLogic.ChangePassword(ctx, &req)
 	if err != nil {
-		_ = ctx.Error(xError.NewError(ctx, xError.OperationFailed, "修改密码失败", false, err))
+		_ = ctx.Error(xError.NewError(ctx, xError.OperationFailed, xError.ErrMessage(err.Error()), false, err))
 		return
 	}
 

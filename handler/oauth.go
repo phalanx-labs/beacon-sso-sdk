@@ -43,10 +43,12 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 	if getErrString, exist := ctx.GetQuery("error"); exist {
 		switch getErrString {
 		case "access_denied":
-			_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, "登录失败", false, errors.New("用户拒绝授权")))
+			accessErr := errors.New("用户拒绝授权")
+			_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, xError.ErrMessage(accessErr.Error()), false, accessErr))
 			return
 		default:
-			_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, "登录失败", false, errors.New("未知错误")))
+			unknownErr := errors.New("未知错误")
+			_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, xError.ErrMessage(unknownErr.Error()), false, unknownErr))
 			return
 		}
 	}

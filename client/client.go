@@ -53,6 +53,13 @@ func WithProtoMerchantClient(protoClient pbconnect.MerchantServiceClient) Option
 	}
 }
 
+// WithProtoUserClient 直接传入 proto client（用于测试）
+func WithProtoUserClient(protoClient pbconnect.UserServiceClient) Option {
+	return func(c *SsoClient) {
+		c.protoUserClient = protoClient
+	}
+}
+
 // SsoClient SSO SDK 客户端
 type SsoClient struct {
 	host                string
@@ -62,9 +69,11 @@ type SsoClient struct {
 	protoPublicClient   pbconnect.PublicServiceClient
 	protoAuthClient     pbconnect.AuthServiceClient
 	protoMerchantClient pbconnect.MerchantServiceClient
+	protoUserClient     pbconnect.UserServiceClient
 	Public              IPublic
 	Auth                IAuth
 	Merchant            IMerchant
+	User                IUser
 }
 
 // NewClient 创建并返回一个新的 SsoClient 实例
@@ -111,12 +120,18 @@ func NewClient(opts ...Option) *SsoClient {
 			baseURL,
 			connect.WithGRPC(),
 		)
+		c.protoUserClient = pbconnect.NewUserServiceClient(
+			c.h2cClient,
+			baseURL,
+			connect.WithGRPC(),
+		)
 	}
 
 	// 创建服务封装
 	c.Public = service2.NewPublicService(c.protoPublicClient, c.headers)
 	c.Auth = service2.NewAuthService(c.protoAuthClient, c.headers)
 	c.Merchant = service2.NewMerchantService(c.protoMerchantClient, c.headers)
+	c.User = service2.NewUserService(c.protoUserClient, c.headers)
 
 	return c
 }
