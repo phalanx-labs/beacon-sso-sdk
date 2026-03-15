@@ -22,17 +22,18 @@ func NewUserHandler(ctx context.Context) *UserHandler {
 	return newHandler
 }
 
-// GetCurrentUser 获取当前用户信息
+// GetCurrentUser 获取当前用户信
 //
-// 请求方法: GET
-// 请求路径: /user/userinfo
-// 请求头:
-//   - Authorization: Bearer {access_token}
-//
-// 响应:
-//   - 200: 返回用户信息
-//   - 400: 参数错误
-//   - 401: 未授权或令牌失效
+// @Summary     [玩家] 用户信息
+// @Description 通过访问令牌获取当前登录用户的详细信息，包括基础信息、联系方式、验证状态和角色列表
+// @Tags        用户接口
+// @Accept      json
+// @Produce     json
+// @Param       Authorization  header  string  true  "Bearer Access Token"
+// @Success     200  {object}  xBase.BaseResponse{data=pb.User}  "获取成功"
+// @Failure     400  {object}  xBase.BaseResponse               "请求参数错误"
+// @Failure     401  {object}  xBase.BaseResponse               "未授权或令牌失效"
+// @Router      /user/userinfo [GET]
 func (h *UserHandler) GetCurrentUser(ctx *gin.Context) {
 	h.log.Info(ctx, "GetCurrentUser - 获取当前用户信息")
 

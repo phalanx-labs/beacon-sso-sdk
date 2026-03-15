@@ -34,19 +34,16 @@ func NewAccountHandler(ctx context.Context) *AccountHandler {
 //
 // 该接口用于通过邮箱验证码完成用户注册，注册成功后自动生成登录 Token。
 //
-// 请求方法: POST
-// 请求路径: /account/register/email
-// 请求体 (JSON):
-//   - email: 邮箱地址（必填）
-//   - code: 邮箱验证码（必填）
-//   - username: 用户名（必填）
-//   - password: 密码（必填）
-//   - nickname: 昵称（可选）
-//
-// 响应:
-//   - 200: 注册成功，返回用户 ID 和登录 Token
-//   - 400: 参数错误
-//   - 500: 服务器内部错误
+// @Summary     [公开] 邮箱注册
+// @Description 通过邮箱验证码完成用户注册，注册成功后自动生成登录 Token
+// @Tags        账户接口
+// @Accept      json
+// @Produce     json
+// @Param       request  body  pb.RegisterByEmailRequest  true  "邮箱注册请求"
+// @Success     200  {object}  xBase.BaseResponse{data=pb.RegisterByEmailResponse}  "注册成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
+// @Router      /account/register/email [POST]
 func (h *AccountHandler) RegisterByEmail(ctx *gin.Context) {
 	h.log.Info(ctx, "RegisterByEmail - 处理邮箱注册请求")
 
@@ -90,18 +87,17 @@ func (h *AccountHandler) RegisterByEmail(ctx *gin.Context) {
 // 该接口实现了 OAuth 2.0 Password Grant，允许受信任的第一方客户端
 // 直接使用用户名和密码换取 Token。
 //
-// 请求方法: POST
-// 请求路径: /account/login/password
-// 请求体 (JSON):
-//   - username: 用户名/邮箱/手机号（必填）
-//   - password: 密码（必填）
-//   - scope: 权限范围（必填）
-//
-// 响应:
-//   - 200: 登录成功，返回访问令牌、刷新令牌等信息
-//   - 400: 参数错误
-//   - 401: 凭证无效
-//   - 500: 服务器内部错误
+// @Summary     [公开] 密码登录
+// @Description 使用用户名和密码进行登录（OAuth 2.0 Password Grant），返回访问令牌和刷新令牌
+// @Tags        账户接口
+// @Accept      json
+// @Produce     json
+// @Param       request  body  pb.PasswordLoginRequest  true  "密码登录请求"
+// @Success     200  {object}  xBase.BaseResponse{data=pb.PasswordLoginResponse}  "登录成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     401  {object}  xBase.BaseResponse  "凭证无效"
+// @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
+// @Router      /account/login/password [POST]
 func (h *AccountHandler) PasswordLogin(ctx *gin.Context) {
 	h.log.Info(ctx, "PasswordLogin - 处理密码登录请求")
 
@@ -138,21 +134,22 @@ func (h *AccountHandler) PasswordLogin(ctx *gin.Context) {
 
 // ChangePassword 修改密码
 //
+// @Summary     [用户] 修改密码
+//
 // 该接口允许已认证的应用为用户修改密码。
 // 普通模式需要验证旧密码，强制重置模式可跳过旧密码验证。
 //
-// 请求方法: POST
-// 请求路径: /account/password/change
-// 请求体 (JSON):
-//   - user_id: 用户 ID（必填）
-//   - old_password: 旧密码（普通模式必填）
-//   - new_password: 新密码（必填）
-//
-// 响应:
-//   - 200: 修改成功
-//   - 400: 参数错误
-//   - 401: 旧密码错误
-//   - 500: 服务器内部错误
+// @Description 修改用户密码，普通模式需要验证旧密码，强制重置模式可跳过旧密码验证
+// @Tags        账户接口
+// @Accept      json
+// @Produce     json
+// @Param       Authorization  header  string                    true  "Bearer Access Token"
+// @Param       request        body    pb.ChangePasswordRequest  true  "修改密码请求"
+// @Success     200  {object}  xBase.BaseResponse{data=pb.ChangePasswordResponse}  "修改成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     401  {object}  xBase.BaseResponse  "未授权或旧密码错误"
+// @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
+// @Router      /account/password/change [POST]
 func (h *AccountHandler) ChangePassword(ctx *gin.Context) {
 	h.log.Info(ctx, "ChangePassword - 处理修改密码请求")
 

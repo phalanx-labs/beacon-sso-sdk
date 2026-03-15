@@ -1,0 +1,698 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Beacon SSO SDK 聚合文档，用于 SDK 内，内置 handler 方法展示。",
+        "title": "Beacon SSO SDK 聚合文档",
+        "contact": {},
+        "version": "v1.0.0"
+    },
+    "paths": {
+        "/account/login/password": {
+            "post": {
+                "description": "使用用户名和密码进行登录（OAuth 2.0 Password Grant），返回访问令牌和刷新令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户接口"
+                ],
+                "summary": "[公开] 密码登录",
+                "parameters": [
+                    {
+                        "description": "密码登录请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.PasswordLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "登录成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/pb.PasswordLoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "凭证无效",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/account/password/change": {
+            "post": {
+                "description": "修改用户密码，普通模式需要验证旧密码，强制重置模式可跳过旧密码验证",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户接口"
+                ],
+                "summary": "[用户] 修改密码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "修改密码请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "修改成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/pb.ChangePasswordResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权或旧密码错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/account/register/email": {
+            "post": {
+                "description": "通过邮箱验证码完成用户注册，注册成功后自动生成登录 Token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户接口"
+                ],
+                "summary": "[公开] 邮箱注册",
+                "parameters": [
+                    {
+                        "description": "邮箱注册请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.RegisterByEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注册成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/pb.RegisterByEmailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/callback": {
+            "get": {
+                "description": "处理 SSO 提供商的回调，通过授权码换取访问令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth接口"
+                ],
+                "summary": "[公开] OAuth2 登录回调",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "授权码",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "状态参数（CSRF 防护）",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "登录成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/oauth2.Token"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "用户拒绝授权或授权失败",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/login": {
+            "get": {
+                "description": "生成 OAuth2 授权链接并重定向到 SSO 提供商的授权页面",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth接口"
+                ],
+                "summary": "[公开] OAuth2 登录跳转",
+                "responses": {
+                    "302": {
+                        "description": "重定向到 SSO 授权页面",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/logout": {
+            "post": {
+                "description": "注销访问令牌或刷新令牌，调用 revocation endpoint 进行注销",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth接口"
+                ],
+                "summary": "[用户] OAuth2 登出",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Access Token 或 Refresh Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "access_token",
+                            "refresh_token"
+                        ],
+                        "type": "string",
+                        "default": "access_token",
+                        "description": "令牌类型",
+                        "name": "token_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "登出成功",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/userinfo": {
+            "get": {
+                "description": "通过访问令牌获取当前登录用户的详细信息，包括基础信息、联系方式、验证状态和角色列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户接口"
+                ],
+                "summary": "[玩家] 用户信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/pb.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权或令牌失效",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "oauth2.Token": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "AccessToken is the token that authorizes and authenticates\nthe requests.",
+                    "type": "string"
+                },
+                "expires_in": {
+                    "description": "ExpiresIn is the OAuth2 wire format \"expires_in\" field,\nwhich specifies how many seconds later the token expires,\nrelative to an unknown time base approximately around \"now\".\nIt is the application's responsibility to populate\n`Expiry` from `ExpiresIn` when required.",
+                    "type": "integer"
+                },
+                "expiry": {
+                    "description": "Expiry is the optional expiration time of the access token.\n\nIf zero, [TokenSource] implementations will reuse the same\ntoken forever and RefreshToken or equivalent\nmechanisms for that TokenSource will not be used.",
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "description": "RefreshToken is a token that's used by the application\n(as opposed to the user) to refresh the access token\nif it expires.",
+                    "type": "string"
+                },
+                "token_type": {
+                    "description": "TokenType is the type of token.\nThe Type method returns either this or \"Bearer\", the default.",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ChangePasswordRequest": {
+            "type": "object",
+            "properties": {
+                "new_password": {
+                    "description": "新密码（至少 6 位且包含字母和数字）",
+                    "type": "string"
+                },
+                "old_password": {
+                    "description": "旧密码（强制重置模式下可省略）",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "用户 ID（雪花 ID 格式）",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ChangePasswordResponse": {
+            "type": "object",
+            "properties": {
+                "base_response": {
+                    "description": "基础响应信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/xGrpcGenerate.BaseResponse"
+                        }
+                    ]
+                }
+            }
+        },
+        "pb.PasswordLoginRequest": {
+            "type": "object",
+            "properties": {
+                "client_ip": {
+                    "description": "客户端 IP 地址（可选，用于安全审计）",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "用户密码（明文）",
+                    "type": "string"
+                },
+                "scope": {
+                    "description": "授权范围（必须包含 openid）",
+                    "type": "string"
+                },
+                "user_agent": {
+                    "description": "客户端 User-Agent（可选，用于安全审计）",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户标识（用户名、邮箱或手机号）",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.PasswordLoginResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "Access Token（UUID 格式）",
+                    "type": "string"
+                },
+                "base_response": {
+                    "description": "基础响应信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/xGrpcGenerate.BaseResponse"
+                        }
+                    ]
+                },
+                "expires_in": {
+                    "description": "Access Token 有效期（秒）",
+                    "type": "integer"
+                },
+                "id_token": {
+                    "description": "ID Token（JWT 格式，scope 包含 openid 时返回）",
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "description": "Refresh Token（UUID 格式）",
+                    "type": "string"
+                },
+                "scope": {
+                    "description": "授权范围",
+                    "type": "string"
+                },
+                "token_type": {
+                    "description": "Token 类型（固定为 \"Bearer\"）",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.RegisterByEmailRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "验证码（必填）",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "邮箱地址（必填）",
+                    "type": "string"
+                },
+                "nickname": {
+                    "description": "昵称（可选，不填则使用用户名或自动生成）",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "密码（必填，至少 6 位且包含字母和数字）",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名（可选，不填则自动生成）",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.RegisterByEmailResponse": {
+            "type": "object",
+            "properties": {
+                "base_response": {
+                    "description": "基础响应信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/xGrpcGenerate.BaseResponse"
+                        }
+                    ]
+                },
+                "token": {
+                    "description": "登录 Token（可用于后续认证）",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "用户 ID（雪花 ID 格式）",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.Role": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "角色代码（如 SUPER_ADMIN、ADMIN、MERCHANT）",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "角色描述",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "角色名称",
+                    "type": "string"
+                }
+            }
+        },
+        "pb.User": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "头像 URL",
+                    "type": "string"
+                },
+                "birthday": {
+                    "description": "生日（ISO 8601 日期格式）",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "邮箱地址",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "性别（0 未知 / 1 男 / 2 女）",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "用户 ID（雪花 ID 格式）",
+                    "type": "string"
+                },
+                "is_email_verified": {
+                    "description": "邮箱是否已验证",
+                    "type": "boolean"
+                },
+                "is_phone_verified": {
+                    "description": "手机是否已验证",
+                    "type": "boolean"
+                },
+                "last_login_at": {
+                    "description": "最后登录时间（ISO 8601 格式）",
+                    "type": "string"
+                },
+                "last_login_ip": {
+                    "description": "最后登录 IP",
+                    "type": "string"
+                },
+                "need_reset_password": {
+                    "description": "是否需要强制重置密码",
+                    "type": "boolean"
+                },
+                "nickname": {
+                    "description": "昵称",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "手机号码",
+                    "type": "string"
+                },
+                "roles": {
+                    "description": "用户角色列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.Role"
+                    }
+                },
+                "status": {
+                    "description": "状态（0 禁用 / 1 启用）",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "xBase.BaseResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "context": {
+                    "type": "string"
+                },
+                "data": {},
+                "error_message": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "output": {
+                    "type": "string"
+                },
+                "overhead": {
+                    "type": "integer"
+                }
+            }
+        },
+        "xGrpcGenerate.BaseResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "业务状态码（200 表示成功，其余与 xError.ErrorCode.Code 对应）。",
+                    "type": "integer"
+                },
+                "context": {
+                    "description": "请求追踪标识（对应 HTTP 的 X-Request-UUID）。",
+                    "type": "string"
+                },
+                "error_message": {
+                    "description": "补充性错误详情，仅在错误场景下填充。",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "人类可读的描述信息。",
+                    "type": "string"
+                },
+                "output": {
+                    "description": "输出标识（如 \"Success\"、\"PARAMETER_ERROR\"）。",
+                    "type": "string"
+                },
+                "overhead": {
+                    "description": "请求处理耗时（微秒），仅在调试模式下填充。",
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

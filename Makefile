@@ -3,6 +3,10 @@ PROTO_FILE ?= client/proto/beacon/sso/v1/public.proto
 BASE_GO_MODULE_DIR := /Users/xiaolfeng/ProgramProjects/Cooperate/bamboo-service/bamboo-base/plugins/grpc
 XBASE_LINK := client/proto/link/base.proto
 
+SWAG_FLAGS = --parseDependency
+MAIN_FILE = main.go
+SWAG_CMD = swag
+
 # 获取版本号（去除 v 前缀）
 VERSION := $(shell cat version | sed 's/^v//')
 
@@ -78,3 +82,7 @@ tag-upload:
 
 # 创建 tag 并推送
 release: tag tag-upload
+
+# 提取出的 Swagger 生成目标
+swag:
+	$(SWAG_CMD) init -g $(MAIN_FILE) $(SWAG_FLAGS)
