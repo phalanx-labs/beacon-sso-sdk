@@ -3,7 +3,7 @@ package docs
 
 import "github.com/swaggo/swag"
 
-const docTemplate = `{
+const docTemplatebeacon_sso_sdk = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
@@ -705,20 +705,20 @@ const docTemplate = `{
     }
 }`
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it
-var SwaggerInfo = &swag.Spec{
+// SwaggerInfobeacon_sso_sdk holds exported Swagger Info so clients can modify it
+var SwaggerInfobeacon_sso_sdk = &swag.Spec{
 	Version:          "v1.0.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Beacon SSO SDK 聚合文档",
 	Description:      "Beacon SSO SDK 聚合文档，用于 SDK 内，内置 handler 方法展示。",
-	InfoInstanceName: "swagger",
-	SwaggerTemplate:  docTemplate,
+	InfoInstanceName: "beacon_sso_sdk",
+	SwaggerTemplate:  docTemplatebeacon_sso_sdk,
 	LeftDelim:        "{{",
 	RightDelim:       "}}",
 }
 
 func init() {
-	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
+	swag.Register(SwaggerInfobeacon_sso_sdk.InstanceName(), SwaggerInfobeacon_sso_sdk)
 }
