@@ -460,6 +460,101 @@ func (x *ChangePasswordResponse) GetBaseResponse() *generate.BaseResponse {
 	return nil
 }
 
+// RevokeTokenRequest 注销 Token 请求
+type RevokeTokenRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Token 类型提示（可选）
+	// - access_token: 仅注销 Access Token
+	// - refresh_token: 仅注销 Refresh Token
+	// - 留空: 默认注销 Access Token
+	TokenTypeHint *string `protobuf:"bytes,1,opt,name=token_type_hint,json=tokenTypeHint,proto3,oneof" json:"token_type_hint,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeTokenRequest) Reset() {
+	*x = RevokeTokenRequest{}
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeTokenRequest) ProtoMessage() {}
+
+func (x *RevokeTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeTokenRequest.ProtoReflect.Descriptor instead.
+func (*RevokeTokenRequest) Descriptor() ([]byte, []int) {
+	return file_beacon_sso_v1_auth_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RevokeTokenRequest) GetTokenTypeHint() string {
+	if x != nil && x.TokenTypeHint != nil {
+		return *x.TokenTypeHint
+	}
+	return ""
+}
+
+// RevokeTokenResponse 注销 Token 响应
+type RevokeTokenResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 基础响应信息
+	BaseResponse  *generate.BaseResponse `protobuf:"bytes,1,opt,name=base_response,json=baseResponse,proto3" json:"base_response,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeTokenResponse) Reset() {
+	*x = RevokeTokenResponse{}
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeTokenResponse) ProtoMessage() {}
+
+func (x *RevokeTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beacon_sso_v1_auth_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeTokenResponse.ProtoReflect.Descriptor instead.
+func (*RevokeTokenResponse) Descriptor() ([]byte, []int) {
+	return file_beacon_sso_v1_auth_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *RevokeTokenResponse) GetBaseResponse() *generate.BaseResponse {
+	if x != nil {
+		return x.BaseResponse
+	}
+	return nil
+}
+
 var File_beacon_sso_v1_auth_proto protoreflect.FileDescriptor
 
 const file_beacon_sso_v1_auth_proto_rawDesc = "" +
@@ -504,11 +599,17 @@ const file_beacon_sso_v1_auth_proto_rawDesc = "" +
 	"\fnew_password\x18\x03 \x01(\tR\vnewPasswordB\x0f\n" +
 	"\r_old_password\"R\n" +
 	"\x16ChangePasswordResponse\x128\n" +
-	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse2\xaa\x02\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\"U\n" +
+	"\x12RevokeTokenRequest\x12+\n" +
+	"\x0ftoken_type_hint\x18\x01 \x01(\tH\x00R\rtokenTypeHint\x88\x01\x01B\x12\n" +
+	"\x10_token_type_hint\"O\n" +
+	"\x13RevokeTokenResponse\x128\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse2\x80\x03\n" +
 	"\vAuthService\x12`\n" +
 	"\x0fRegisterByEmail\x12%.beacon.sso.v1.RegisterByEmailRequest\x1a&.beacon.sso.v1.RegisterByEmailResponse\x12Z\n" +
 	"\rPasswordLogin\x12#.beacon.sso.v1.PasswordLoginRequest\x1a$.beacon.sso.v1.PasswordLoginResponse\x12]\n" +
-	"\x0eChangePassword\x12$.beacon.sso.v1.ChangePasswordRequest\x1a%.beacon.sso.v1.ChangePasswordResponseBDZBgithub.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pbb\x06proto3"
+	"\x0eChangePassword\x12$.beacon.sso.v1.ChangePasswordRequest\x1a%.beacon.sso.v1.ChangePasswordResponse\x12T\n" +
+	"\vRevokeToken\x12!.beacon.sso.v1.RevokeTokenRequest\x1a\".beacon.sso.v1.RevokeTokenResponseBDZBgithub.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pbb\x06proto3"
 
 var (
 	file_beacon_sso_v1_auth_proto_rawDescOnce sync.Once
@@ -522,7 +623,7 @@ func file_beacon_sso_v1_auth_proto_rawDescGZIP() []byte {
 	return file_beacon_sso_v1_auth_proto_rawDescData
 }
 
-var file_beacon_sso_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_beacon_sso_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_beacon_sso_v1_auth_proto_goTypes = []any{
 	(*RegisterByEmailRequest)(nil),  // 0: beacon.sso.v1.RegisterByEmailRequest
 	(*RegisterByEmailResponse)(nil), // 1: beacon.sso.v1.RegisterByEmailResponse
@@ -530,23 +631,28 @@ var file_beacon_sso_v1_auth_proto_goTypes = []any{
 	(*PasswordLoginResponse)(nil),   // 3: beacon.sso.v1.PasswordLoginResponse
 	(*ChangePasswordRequest)(nil),   // 4: beacon.sso.v1.ChangePasswordRequest
 	(*ChangePasswordResponse)(nil),  // 5: beacon.sso.v1.ChangePasswordResponse
-	(*generate.BaseResponse)(nil),   // 6: xBase.BaseResponse
+	(*RevokeTokenRequest)(nil),      // 6: beacon.sso.v1.RevokeTokenRequest
+	(*RevokeTokenResponse)(nil),     // 7: beacon.sso.v1.RevokeTokenResponse
+	(*generate.BaseResponse)(nil),   // 8: xBase.BaseResponse
 }
 var file_beacon_sso_v1_auth_proto_depIdxs = []int32{
-	6, // 0: beacon.sso.v1.RegisterByEmailResponse.base_response:type_name -> xBase.BaseResponse
-	6, // 1: beacon.sso.v1.PasswordLoginResponse.base_response:type_name -> xBase.BaseResponse
-	6, // 2: beacon.sso.v1.ChangePasswordResponse.base_response:type_name -> xBase.BaseResponse
-	0, // 3: beacon.sso.v1.AuthService.RegisterByEmail:input_type -> beacon.sso.v1.RegisterByEmailRequest
-	2, // 4: beacon.sso.v1.AuthService.PasswordLogin:input_type -> beacon.sso.v1.PasswordLoginRequest
-	4, // 5: beacon.sso.v1.AuthService.ChangePassword:input_type -> beacon.sso.v1.ChangePasswordRequest
-	1, // 6: beacon.sso.v1.AuthService.RegisterByEmail:output_type -> beacon.sso.v1.RegisterByEmailResponse
-	3, // 7: beacon.sso.v1.AuthService.PasswordLogin:output_type -> beacon.sso.v1.PasswordLoginResponse
-	5, // 8: beacon.sso.v1.AuthService.ChangePassword:output_type -> beacon.sso.v1.ChangePasswordResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	8, // 0: beacon.sso.v1.RegisterByEmailResponse.base_response:type_name -> xBase.BaseResponse
+	8, // 1: beacon.sso.v1.PasswordLoginResponse.base_response:type_name -> xBase.BaseResponse
+	8, // 2: beacon.sso.v1.ChangePasswordResponse.base_response:type_name -> xBase.BaseResponse
+	8, // 3: beacon.sso.v1.RevokeTokenResponse.base_response:type_name -> xBase.BaseResponse
+	0, // 4: beacon.sso.v1.AuthService.RegisterByEmail:input_type -> beacon.sso.v1.RegisterByEmailRequest
+	2, // 5: beacon.sso.v1.AuthService.PasswordLogin:input_type -> beacon.sso.v1.PasswordLoginRequest
+	4, // 6: beacon.sso.v1.AuthService.ChangePassword:input_type -> beacon.sso.v1.ChangePasswordRequest
+	6, // 7: beacon.sso.v1.AuthService.RevokeToken:input_type -> beacon.sso.v1.RevokeTokenRequest
+	1, // 8: beacon.sso.v1.AuthService.RegisterByEmail:output_type -> beacon.sso.v1.RegisterByEmailResponse
+	3, // 9: beacon.sso.v1.AuthService.PasswordLogin:output_type -> beacon.sso.v1.PasswordLoginResponse
+	5, // 10: beacon.sso.v1.AuthService.ChangePassword:output_type -> beacon.sso.v1.ChangePasswordResponse
+	7, // 11: beacon.sso.v1.AuthService.RevokeToken:output_type -> beacon.sso.v1.RevokeTokenResponse
+	8, // [8:12] is the sub-list for method output_type
+	4, // [4:8] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_beacon_sso_v1_auth_proto_init() }
@@ -557,13 +663,14 @@ func file_beacon_sso_v1_auth_proto_init() {
 	file_beacon_sso_v1_auth_proto_msgTypes[2].OneofWrappers = []any{}
 	file_beacon_sso_v1_auth_proto_msgTypes[3].OneofWrappers = []any{}
 	file_beacon_sso_v1_auth_proto_msgTypes[4].OneofWrappers = []any{}
+	file_beacon_sso_v1_auth_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_beacon_sso_v1_auth_proto_rawDesc), len(file_beacon_sso_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

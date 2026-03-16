@@ -12,6 +12,7 @@ import (
 //   - POST /account/register/email - 邮箱注册（公开）
 //   - POST /account/login/password - 密码登录（公开）
 //   - POST /account/password/change - 修改密码（需要认证）
+//   - POST /account/token/revoke - 注销令牌（需要认证）
 func (r *Route) AccountRouter(route *gin.RouterGroup) {
 	group := route.Group("/account")
 
@@ -23,4 +24,5 @@ func (r *Route) AccountRouter(route *gin.RouterGroup) {
 
 	// 需要认证的接口
 	group.POST("/password/change", bSdkMiddle.CheckAuth(r.ctx), accountHandler.ChangePassword)
+	group.POST("/token/revoke", bSdkMiddle.CheckAuth(r.ctx), accountHandler.RevokeToken)
 }

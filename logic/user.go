@@ -43,3 +43,25 @@ func (l *UserLogic) GetCurrentUser(ctx context.Context, accessToken string) (*pb
 	l.log.Info(ctx, "GetCurrentUser - 获取当前用户信息")
 	return l.ssoClient.GetCurrentUser(ctx, accessToken)
 }
+
+// GetUserByID 根据用户 ID 获取用户详细信息
+//
+// 该方法允许已认证的 App 查询指定用户的完整信息。
+// 主要用于接入 App 需要获取其他用户信息的场景。
+//
+// 与 GetCurrentUser 的区别：
+//   - GetCurrentUser: 从 Token 中获取当前登录用户信息
+//   - GetUserByID: 通过 user_id 参数获取任意用户信息
+//
+// 参数说明:
+//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+//   - accessToken: 用户访问令牌（Bearer 格式或裸 Token）。
+//   - req: 根据 ID 获取用户请求，包含用户 ID。
+//
+// 返回值:
+//   - *pb.GetUserByIDResponse: 用户信息响应。
+//   - error: 获取失败时返回错误。
+func (l *UserLogic) GetUserByID(ctx context.Context, accessToken string, req *pb.GetUserByIDRequest) (*pb.GetUserByIDResponse, error) {
+	l.log.Info(ctx, "GetUserByID - 根据ID获取用户信息")
+	return l.ssoClient.GetUserByID(ctx, accessToken, req)
+}

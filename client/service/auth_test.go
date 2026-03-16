@@ -29,6 +29,10 @@ func (m *mockAuthServiceClient) ChangePassword(ctx context.Context, req *connect
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("not implemented"))
 }
 
+func (m *mockAuthServiceClient) RevokeToken(ctx context.Context, req *connect.Request[pb.RevokeTokenRequest]) (*connect.Response[pb.RevokeTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("not implemented"))
+}
+
 func TestAuthService_ChangePassword(t *testing.T) {
 	ctx := context.Background()
 

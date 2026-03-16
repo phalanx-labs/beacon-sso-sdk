@@ -179,3 +179,49 @@ func (h *AccountHandler) ChangePassword(ctx *gin.Context) {
 
 	xResult.SuccessHasData(ctx, "修改密码成功", resp)
 }
+
+// RevokeToken 注销令牌（登出）
+//
+// 该方法用于注销当前用户的 Access Token，实现用户登出功能。
+// 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+//
+// @Summary     [用户] 注销令牌
+// @Description 注销当前用户的访问令牌或刷新令牌，实现用户登出功能（符合 RFC 7009 OAuth 2.0 Token Revocation）
+// @Tags        账户接口
+// @Accept      json
+// @Produce     json
+// @Param       Authorization     header  string  true  "Bearer Access Token"
+// @Param       token_type_hint   query   string  false  "令牌类型提示：access_token 或 refresh_token"  Enums(access_token, refresh_token)
+// @Success     200  {object}  xBase.BaseResponse{data=pb.RevokeTokenResponse}  "注销成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     401  {object}  xBase.BaseResponse  "未授权或令牌失效"
+// @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
+// @Router      /account/token/revoke [POST]
+func (h *AccountHandler) RevokeToken(ctx *gin.Context) {
+	h.log.Info(ctx, "RevokeToken - 处理注销令牌请求")
+
+	// 获取 Authorization Token
+	accessToken := ctx.GetHeader("Authorization")
+	if accessToken == "" {
+		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要访问令牌参数", false, nil))
+		return
+	}
+
+	// 获取可选的 token_type_hint 参数
+	tokenTypeHint := ctx.Query("token_type_hint")
+
+	// 构建请求
+	req := &pb.RevokeTokenRequest{}
+	if tokenTypeHint != "" {
+		req.TokenTypeHint = &tokenTypeHint
+	}
+
+	// 调用业务逻辑
+	resp, err := h.service.authLogic.RevokeToken(ctx, accessToken, req)
+	if err != nil {
+		_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, xError.ErrMessage(err.Error()), false, err))
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "注销令牌成功", resp)
+}

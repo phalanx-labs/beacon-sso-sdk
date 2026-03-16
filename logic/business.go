@@ -13,7 +13,6 @@ import (
 	xUtil "github.com/bamboo-services/bamboo-base-go/common/utility"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
-	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
@@ -53,13 +52,13 @@ func NewBusiness(ctx context.Context) *BusinessLogic {
 // 扩展字段。
 //
 // 参数说明:
-//   - ctx: Gin 上下文对象，用于传递请求上下文及日志追踪。
+//   - ctx: 上下文对象，用于传递请求上下文及日志追踪。
 //   - accessToken: 访问令牌，用于 Bearer 认证。
 //
 // 返回值:
 //   - *bSdkModels.OAuthUserinfo: 解析后的用户信息对象，包含标准字段和原始数据。
 //   - *xError.Error: 操作过程中发生的错误，如令牌为空、网络请求失败或解析错误。
-func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkModels.OAuthUserinfo, *xError.Error) {
+func (l *BusinessLogic) Userinfo(ctx context.Context, accessToken string) (*bSdkModels.OAuthUserinfo, *xError.Error) {
 	l.log.Info(ctx, "Userinfo - 获取用户信息")
 
 	if accessToken == "" {
@@ -131,7 +130,19 @@ func (l *BusinessLogic) Userinfo(ctx *gin.Context, accessToken string) (*bSdkMod
 }
 
 // Introspection 调用 OAuth2 Introspection Endpoint 查询令牌状态与有效期。
-func (l *BusinessLogic) Introspection(ctx *gin.Context, tokenType string, token string) (*bSdkModels.OAuthIntrospection, *xError.Error) {
+//
+// 该方法接收令牌类型和令牌值，向配置的 SSO Introspection 端点发起请求，
+// 获取令牌的活跃状态、过期时间等信息，并缓存结果以提升后续查询性能。
+//
+// 参数说明:
+//   - ctx: 上下文对象，用于传递请求上下文及日志追踪。
+//   - tokenType: 令牌类型（如 "access_token"、"refresh_token"）。
+//   - token: 令牌值。
+//
+// 返回值:
+//   - *bSdkModels.OAuthIntrospection: 令牌自省结果对象。
+//   - *xError.Error: 操作过程中发生的错误。
+func (l *BusinessLogic) Introspection(ctx context.Context, tokenType string, token string) (*bSdkModels.OAuthIntrospection, *xError.Error) {
 	l.log.Info(ctx, "Introspection - 查询令牌有效期")
 
 	if tokenType == "" {

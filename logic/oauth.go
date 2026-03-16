@@ -12,7 +12,6 @@ import (
 	xUtil "github.com/bamboo-services/bamboo-base-go/common/utility"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
 	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
-	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
@@ -67,14 +66,14 @@ func NewOAuth(ctx context.Context) *OAuthLogic {
 // 一致性以防止 CSRF 攻击，而 Verifier 则用于后续换取 Token 时的安全校验。
 //
 // 参数说明:
-//   - ctx: Gin 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
+//   - ctx: 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
 //
 // 返回值:
 //   - *bSdkModels.CacheOAuth: 包含生成的 State 和 Verifier 的缓存对象。
 //   - *xError.Error: 存储操作失败时返回错误信息（例如 Redis 连接问题）。
 //
 // 注意: 此方法仅负责数据的创建与存储，不直接处理 HTTP 请求或响应。
-func (l *OAuthLogic) Create(ctx *gin.Context) (*bSdkModels.CacheOAuth, *xError.Error) {
+func (l *OAuthLogic) Create(ctx context.Context) (*bSdkModels.CacheOAuth, *xError.Error) {
 	l.log.Info(ctx, "Create - 创建 STATE 和 PCKE 码")
 
 	generateVerifier := oauth2.GenerateVerifier()
@@ -97,13 +96,13 @@ func (l *OAuthLogic) Create(ctx *gin.Context) (*bSdkModels.CacheOAuth, *xError.E
 // 生成 Code Challenge，以满足 PKCE (Proof Key for Code Exchange) 安全规范。
 //
 // 参数说明:
-//   - ctx: Gin 请求上下文，用于日志记录和获取配置。
+//   - ctx: 请求上下文，用于日志记录和获取配置。
 //   - oAuth: 包含 State 和 Verifier 信息的缓存对象。
 //
 // 返回值:
 //   - string: 生成的授权跳转 URL。
 //   - *xError.Error: 构建失败时（例如获取配置失败）返回错误，否则为 nil。
-func (l *OAuthLogic) BuildURL(ctx *gin.Context, oAuth *bSdkModels.CacheOAuth) (string, *xError.Error) {
+func (l *OAuthLogic) BuildURL(ctx context.Context, oAuth *bSdkModels.CacheOAuth) (string, *xError.Error) {
 	l.log.Info(ctx, "BuildURL - 构建跳转地址")
 
 	var authCodeConfig = []oauth2.AuthCodeOption{
@@ -119,7 +118,7 @@ func (l *OAuthLogic) BuildURL(ctx *gin.Context, oAuth *bSdkModels.CacheOAuth) (s
 // PKCE Verifier。为了防止重放攻击，验证成功后会尝试清理缓存中的 state 数据。
 //
 // 参数说明:
-//   - ctx: Gin 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
+//   - ctx: 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
 //   - state: 客户端在请求授权时生成的随机状态码，用于验证请求的完整性。
 //
 // 返回值:
@@ -128,7 +127,7 @@ func (l *OAuthLogic) BuildURL(ctx *gin.Context, oAuth *bSdkModels.CacheOAuth) (s
 //
 // 注意: 验证通过后，该方法会尝试从缓存中删除该 state 记录。如果删除操作失败，
 // 仅记录警告日志而不阻断验证流程。
-func (l *OAuthLogic) Verify(ctx *gin.Context, state string) (*bSdkModels.CacheOAuth, *xError.Error) {
+func (l *OAuthLogic) Verify(ctx context.Context, state string) (*bSdkModels.CacheOAuth, *xError.Error) {
 	l.log.Info(ctx, "Verify - 校验 STATE")
 
 	if state == "" {
@@ -159,7 +158,7 @@ func (l *OAuthLogic) Verify(ctx *gin.Context, state string) (*bSdkModels.CacheOA
 // 和在 Create 阶段生成的 PKCE 验证器（verifier）向认证服务器请求访问令牌。
 //
 // 参数说明:
-//   - ctx: Gin 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
+//   - ctx: 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
 //   - code: OAuth 回调返回的授权码。
 //   - verifier: PKCE 代码验证器，必须与 Create 阶段生成的值一致。
 //   - codeType: 授权码类型，默认为 "authorization_code"，如果是刷新令牌则为 "refresh_token"。
@@ -167,7 +166,7 @@ func (l *OAuthLogic) Verify(ctx *gin.Context, state string) (*bSdkModels.CacheOA
 // 返回值:
 //   - *oauth2.Token: 包含访问令牌、刷新令牌及过期时间信息的对象。
 //   - *xError.Error: 如果授权码无效、验证器不匹配或网络请求失败，则返回具体的错误信息。
-func (l *OAuthLogic) Exchange(ctx *gin.Context, code string, verifier string) (*oauth2.Token, *xError.Error) {
+func (l *OAuthLogic) Exchange(ctx context.Context, code string, verifier string) (*oauth2.Token, *xError.Error) {
 	l.log.Info(ctx, "Exchange - 换取令牌")
 
 	var authCodeConfig = []oauth2.AuthCodeOption{
@@ -194,7 +193,20 @@ func (l *OAuthLogic) Exchange(ctx *gin.Context, code string, verifier string) (*
 	return getToken, nil
 }
 
-func (l *OAuthLogic) TokenSource(ctx *gin.Context, cacheToken *bSdkModels.CacheOAuthToken, rt string) (*oauth2.Token, *xError.Error) {
+// TokenSource 刷新令牌
+//
+// 该方法使用刷新令牌（Refresh Token）获取新的访问令牌。
+// 它会校验传入的刷新令牌与缓存中的一致性，不一致则清理缓存。
+//
+// 参数说明:
+//   - ctx: 请求上下文，用于传递请求范围的数据、控制超时及日志记录。
+//   - cacheToken: 缓存中的令牌信息。
+//   - rt: 客户端提供的刷新令牌。
+//
+// 返回值:
+//   - *oauth2.Token: 刷新后的令牌对象。
+//   - *xError.Error: 刷新失败时返回错误信息。
+func (l *OAuthLogic) TokenSource(ctx context.Context, cacheToken *bSdkModels.CacheOAuthToken, rt string) (*oauth2.Token, *xError.Error) {
 	l.log.Info(ctx, "TokenSource - 刷新令牌")
 
 	// 校验 RT 是否一致
@@ -239,13 +251,13 @@ func (l *OAuthLogic) TokenSource(ctx *gin.Context, cacheToken *bSdkModels.CacheO
 // 避免每次请求都需要重新访问 OAuth2 平台。
 //
 // 参数说明:
-//   - ctx: Gin 请求上下文。
+//   - ctx: 请求上下文。
 //   - accessToken: 客户端传入的访问令牌。
 //
 // 返回值:
 //   - *bSdkModels.CacheOAuthToken: 缓存中的令牌信息。
 //   - *xError.Error: 查询失败时返回错误信息。
-func (l *OAuthLogic) GetToken(ctx *gin.Context, accessToken string) (*bSdkModels.CacheOAuthToken, *xError.Error) {
+func (l *OAuthLogic) GetToken(ctx context.Context, accessToken string) (*bSdkModels.CacheOAuthToken, *xError.Error) {
 	l.log.Info(ctx, "GetToken - 获取缓存令牌")
 
 	if accessToken == "" {
@@ -260,13 +272,13 @@ func (l *OAuthLogic) GetToken(ctx *gin.Context, accessToken string) (*bSdkModels
 // 该方法根据提供的访问令牌从缓存中查询令牌详情，并将其过期时间与当前时间进行比对。
 //
 // 参数说明:
-//   - ctx: Gin 请求上下文。
+//   - ctx: 请求上下文。
 //   - accessToken: 待校验的访问令牌字符串。
 //
 // 返回值:
 //   - bool: 如果令牌已过期返回 true，否则返回 false。
 //   - *xError.Error: 查询令牌信息失败时返回错误，成功时为 nil。
-func (l *OAuthLogic) VerifyExpiry(ctx *gin.Context, accessToken string) (bool, *xError.Error) {
+func (l *OAuthLogic) VerifyExpiry(ctx context.Context, accessToken string) (bool, *xError.Error) {
 	l.log.Info(ctx, "VerifyExpiry - 验证令牌过期")
 
 	getToken, xErr := l.tokenData.Get(ctx, accessToken)
@@ -284,7 +296,15 @@ func (l *OAuthLogic) VerifyExpiry(ctx *gin.Context, accessToken string) (bool, *
 //
 // 该方法会把指定 token 发送到 revocation endpoint 完成远端注销，
 // 并尝试清理本地缓存中的 access token。缓存清理失败仅记录告警，不阻断主流程。
-func (l *OAuthLogic) Logout(ctx *gin.Context, tokenType string, token string) *xError.Error {
+//
+// 参数说明:
+//   - ctx: 请求上下文。
+//   - tokenType: 令牌类型（如 "access_token"、"refresh_token"）。
+//   - token: 待注销的令牌值。
+//
+// 返回值:
+//   - *xError.Error: 注销失败时返回错误信息。
+func (l *OAuthLogic) Logout(ctx context.Context, tokenType string, token string) *xError.Error {
 	l.log.Info(ctx, "Logout - 注销令牌")
 
 	if tokenType == "" {

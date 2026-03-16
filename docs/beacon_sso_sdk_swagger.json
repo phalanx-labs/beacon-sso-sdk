@@ -200,6 +200,78 @@
                 }
             }
         },
+        "/account/token/revoke": {
+            "post": {
+                "description": "注销当前用户的访问令牌或刷新令牌，实现用户登出功能（符合 RFC 7009 OAuth 2.0 Token Revocation）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户接口"
+                ],
+                "summary": "[用户] 注销令牌",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "access_token",
+                            "refresh_token"
+                        ],
+                        "type": "string",
+                        "description": "令牌类型提示：access_token 或 refresh_token",
+                        "name": "token_type_hint",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注销成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/pb.RevokeTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权或令牌失效",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/oauth/callback": {
             "get": {
                 "description": "处理 SSO 提供商的回调，通过授权码换取访问令牌",
@@ -328,6 +400,69 @@
                     },
                     "400": {
                         "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/by-id": {
+            "get": {
+                "description": "根据用户ID获取指定用户的详细信息，包括基础信息、联系方式、验证状态和角色列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户接口"
+                ],
+                "summary": "[用户] 根据ID获取用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户ID（雪花ID格式）",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/pb.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权或令牌失效",
                         "schema": {
                             "$ref": "#/definitions/xBase.BaseResponse"
                         }
@@ -553,6 +688,19 @@
                 "user_id": {
                     "description": "用户 ID（雪花 ID 格式）",
                     "type": "string"
+                }
+            }
+        },
+        "pb.RevokeTokenResponse": {
+            "type": "object",
+            "properties": {
+                "base_response": {
+                    "description": "基础响应信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/xGrpcGenerate.BaseResponse"
+                        }
+                    ]
                 }
             }
         },

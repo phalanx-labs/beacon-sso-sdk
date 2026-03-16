@@ -1,9 +1,10 @@
 package bSdkRepo
 
 import (
+	"context"
+
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	"github.com/gin-gonic/gin"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
 	bSdkCache "github.com/phalanx-labs/beacon-sso-sdk/repository/cache"
 	"github.com/redis/go-redis/v9"
@@ -40,7 +41,7 @@ func NewOAuthRepo(db *gorm.DB, rdb *redis.Client) *OAuthRepo {
 	}
 }
 
-func (r *OAuthRepo) Store(ctx *gin.Context, state string, verifier string) *xError.Error {
+func (r *OAuthRepo) Store(ctx context.Context, state string, verifier string) *xError.Error {
 	if state == "" || verifier == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "状态或验证器为空", false, nil)
 	}
@@ -53,7 +54,7 @@ func (r *OAuthRepo) Store(ctx *gin.Context, state string, verifier string) *xErr
 	return nil
 }
 
-func (r *OAuthRepo) Get(ctx *gin.Context, state string) (*bSdkModels.CacheOAuth, *xError.Error) {
+func (r *OAuthRepo) Get(ctx context.Context, state string) (*bSdkModels.CacheOAuth, *xError.Error) {
 	if state == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "状态为空", false, nil)
 	}
@@ -66,7 +67,7 @@ func (r *OAuthRepo) Get(ctx *gin.Context, state string) (*bSdkModels.CacheOAuth,
 	return values, nil
 }
 
-func (r *OAuthRepo) Delete(ctx *gin.Context, state string) *xError.Error {
+func (r *OAuthRepo) Delete(ctx context.Context, state string) *xError.Error {
 	if state == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "状态为空", false, nil)
 	}

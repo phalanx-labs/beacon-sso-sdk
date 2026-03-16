@@ -36,6 +36,8 @@ const (
 	// UserServiceGetCurrentUserProcedure is the fully-qualified name of the UserService's
 	// GetCurrentUser RPC.
 	UserServiceGetCurrentUserProcedure = "/beacon.sso.v1.UserService/GetCurrentUser"
+	// UserServiceGetUserByIDProcedure is the fully-qualified name of the UserService's GetUserByID RPC.
+	UserServiceGetUserByIDProcedure = "/beacon.sso.v1.UserService/GetUserByID"
 )
 
 // UserServiceClient is a client for the beacon.sso.v1.UserService service.
@@ -50,6 +52,20 @@ type UserServiceClient interface {
 	// - 登录信息（最后登录时间/IP）
 	// - 角色列表
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
+	// GetUserByID 根据用户 ID 获取用户详细信息
+	//
+	// 该方法允许已认证的 App 查询指定用户的完整信息。
+	// 主要用于接入 App 需要获取其他用户信息的场景。
+	//
+	// 与 GetCurrentUser 的区别：
+	// - GetCurrentUser: 从 Token 中获取当前登录用户信息
+	// - GetUserByID: 通过 user_id 参数获取任意用户信息
+	//
+	// 适用场景：
+	// - 查看其他用户资料
+	// - 用户选择器组件
+	// - 管理后台查询
+	GetUserByID(context.Context, *connect.Request[v1.GetUserByIDRequest]) (*connect.Response[v1.GetUserByIDResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the beacon.sso.v1.UserService service. By default,
@@ -69,17 +85,29 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("GetCurrentUser")),
 			connect.WithClientOptions(opts...),
 		),
+		getUserByID: connect.NewClient[v1.GetUserByIDRequest, v1.GetUserByIDResponse](
+			httpClient,
+			baseURL+UserServiceGetUserByIDProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetUserByID")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
 	getCurrentUser *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
+	getUserByID    *connect.Client[v1.GetUserByIDRequest, v1.GetUserByIDResponse]
 }
 
 // GetCurrentUser calls beacon.sso.v1.UserService.GetCurrentUser.
 func (c *userServiceClient) GetCurrentUser(ctx context.Context, req *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error) {
 	return c.getCurrentUser.CallUnary(ctx, req)
+}
+
+// GetUserByID calls beacon.sso.v1.UserService.GetUserByID.
+func (c *userServiceClient) GetUserByID(ctx context.Context, req *connect.Request[v1.GetUserByIDRequest]) (*connect.Response[v1.GetUserByIDResponse], error) {
+	return c.getUserByID.CallUnary(ctx, req)
 }
 
 // UserServiceHandler is an implementation of the beacon.sso.v1.UserService service.
@@ -94,6 +122,20 @@ type UserServiceHandler interface {
 	// - 登录信息（最后登录时间/IP）
 	// - 角色列表
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
+	// GetUserByID 根据用户 ID 获取用户详细信息
+	//
+	// 该方法允许已认证的 App 查询指定用户的完整信息。
+	// 主要用于接入 App 需要获取其他用户信息的场景。
+	//
+	// 与 GetCurrentUser 的区别：
+	// - GetCurrentUser: 从 Token 中获取当前登录用户信息
+	// - GetUserByID: 通过 user_id 参数获取任意用户信息
+	//
+	// 适用场景：
+	// - 查看其他用户资料
+	// - 用户选择器组件
+	// - 管理后台查询
+	GetUserByID(context.Context, *connect.Request[v1.GetUserByIDRequest]) (*connect.Response[v1.GetUserByIDResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -109,10 +151,18 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("GetCurrentUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceGetUserByIDHandler := connect.NewUnaryHandler(
+		UserServiceGetUserByIDProcedure,
+		svc.GetUserByID,
+		connect.WithSchema(userServiceMethods.ByName("GetUserByID")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/beacon.sso.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceGetCurrentUserProcedure:
 			userServiceGetCurrentUserHandler.ServeHTTP(w, r)
+		case UserServiceGetUserByIDProcedure:
+			userServiceGetUserByIDHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -124,4 +174,8 @@ type UnimplementedUserServiceHandler struct{}
 
 func (UnimplementedUserServiceHandler) GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.UserService.GetCurrentUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetUserByID(context.Context, *connect.Request[v1.GetUserByIDRequest]) (*connect.Response[v1.GetUserByIDResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.UserService.GetUserByID is not implemented"))
 }

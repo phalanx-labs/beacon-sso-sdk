@@ -61,6 +61,20 @@ message GetCurrentUserResponse {
   User user = 11;
 }
 
+// GetUserByIDRequest 根据 ID 获取用户请求
+message GetUserByIDRequest {
+  // 用户 ID（雪花 ID 格式，必填）
+  string user_id = 1;
+}
+
+// GetUserByIDResponse 根据 ID 获取用户响应
+message GetUserByIDResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+  // 用户信息
+  User user = 11;
+}
+
 // UserService 用户服务（需要 App 认证 + 用户 Token 认证）
 //
 // 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证和用户 Token：
@@ -78,4 +92,19 @@ service UserService {
   // - 登录信息（最后登录时间/IP）
   // - 角色列表
   rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+
+  // GetUserByID 根据用户 ID 获取用户详细信息
+  //
+  // 该方法允许已认证的 App 查询指定用户的完整信息。
+  // 主要用于接入 App 需要获取其他用户信息的场景。
+  //
+  // 与 GetCurrentUser 的区别：
+  // - GetCurrentUser: 从 Token 中获取当前登录用户信息
+  // - GetUserByID: 通过 user_id 参数获取任意用户信息
+  //
+  // 适用场景：
+  // - 查看其他用户资料
+  // - 用户选择器组件
+  // - 管理后台查询
+  rpc GetUserByID(GetUserByIDRequest) returns (GetUserByIDResponse);
 }

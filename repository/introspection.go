@@ -1,11 +1,11 @@
 package bSdkRepo
 
 import (
+	"context"
 	"encoding/json"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	"github.com/gin-gonic/gin"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
 	bSdkCache "github.com/phalanx-labs/beacon-sso-sdk/repository/cache"
 	"github.com/redis/go-redis/v9"
@@ -40,7 +40,7 @@ func NewIntrospectionRepo(db *gorm.DB, rdb *redis.Client) *IntrospectionRepo {
 // GetCache 从缓存中获取令牌自省结果
 //
 // 参数:
-//   - ctx: Gin 上下文对象，用于传递请求上下文。
+//   - ctx: 上下文对象，用于传递请求上下文。
 //   - tokenType: 令牌类型（如 "access_token"、"refresh_token"）。
 //   - token: 令牌值。
 //
@@ -48,7 +48,7 @@ func NewIntrospectionRepo(db *gorm.DB, rdb *redis.Client) *IntrospectionRepo {
 //   - *bSdkModels.OAuthIntrospection: 缓存的令牌自省结果对象。
 //   - bool: 是否命中缓存（true 表示命中，false 表示未命中）。
 //   - error: 操作过程中发生的错误。
-func (r *IntrospectionRepo) GetCache(ctx *gin.Context, tokenType string, token string) (*bSdkModels.OAuthIntrospection, bool, error) {
+func (r *IntrospectionRepo) GetCache(ctx context.Context, tokenType string, token string) (*bSdkModels.OAuthIntrospection, bool, error) {
 	if tokenType == "" || token == "" {
 		return nil, false, nil
 	}
@@ -85,14 +85,14 @@ func (r *IntrospectionRepo) GetCache(ctx *gin.Context, tokenType string, token s
 // StoreCache 将令牌自省结果存储到缓存
 //
 // 参数:
-//   - ctx: Gin 上下文对象，用于传递请求上下文。
+//   - ctx: 上下文对象，用于传递请求上下文。
 //   - tokenType: 令牌类型（如 "access_token"、"refresh_token"）。
 //   - token: 令牌值。
 //   - introspection: 要缓存的令牌自省结果对象。
 //
 // 返回值:
 //   - error: 操作过程中发生的错误。
-func (r *IntrospectionRepo) StoreCache(ctx *gin.Context, tokenType string, token string, introspection *bSdkModels.OAuthIntrospection) error {
+func (r *IntrospectionRepo) StoreCache(ctx context.Context, tokenType string, token string, introspection *bSdkModels.OAuthIntrospection) error {
 	if tokenType == "" || token == "" || introspection == nil {
 		return nil
 	}
@@ -121,13 +121,13 @@ func (r *IntrospectionRepo) StoreCache(ctx *gin.Context, tokenType string, token
 // DeleteCache 删除令牌自省缓存
 //
 // 参数:
-//   - ctx: Gin 上下文对象，用于传递请求上下文。
+//   - ctx: 上下文对象，用于传递请求上下文。
 //   - tokenType: 令牌类型（如 "access_token"、"refresh_token"）。
 //   - token: 令牌值。
 //
 // 返回值:
 //   - *xError.Error: 操作过程中发生的错误。
-func (r *IntrospectionRepo) DeleteCache(ctx *gin.Context, tokenType string, token string) *xError.Error {
+func (r *IntrospectionRepo) DeleteCache(ctx context.Context, tokenType string, token string) *xError.Error {
 	if tokenType == "" || token == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "令牌类型或令牌为空", false, nil)
 	}

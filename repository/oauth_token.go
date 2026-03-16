@@ -1,9 +1,10 @@
 package bSdkRepo
 
 import (
+	"context"
+
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	"github.com/gin-gonic/gin"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
 	bSdkCache "github.com/phalanx-labs/beacon-sso-sdk/repository/cache"
 	"github.com/redis/go-redis/v9"
@@ -35,7 +36,7 @@ func NewOAuthTokenRepo(db *gorm.DB, rdb *redis.Client) *OAuthTokenRepo {
 	}
 }
 
-func (r *OAuthTokenRepo) Store(ctx *gin.Context, token *bSdkModels.CacheOAuthToken) *xError.Error {
+func (r *OAuthTokenRepo) Store(ctx context.Context, token *bSdkModels.CacheOAuthToken) *xError.Error {
 	if token == nil || token.AccessToken == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
 	}
@@ -47,7 +48,7 @@ func (r *OAuthTokenRepo) Store(ctx *gin.Context, token *bSdkModels.CacheOAuthTok
 	return nil
 }
 
-func (r *OAuthTokenRepo) Get(ctx *gin.Context, accessToken string) (*bSdkModels.CacheOAuthToken, *xError.Error) {
+func (r *OAuthTokenRepo) Get(ctx context.Context, accessToken string) (*bSdkModels.CacheOAuthToken, *xError.Error) {
 	if accessToken == "" {
 		return nil, xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
 	}
@@ -60,7 +61,7 @@ func (r *OAuthTokenRepo) Get(ctx *gin.Context, accessToken string) (*bSdkModels.
 	return values, nil
 }
 
-func (r *OAuthTokenRepo) Delete(ctx *gin.Context, accessToken string) *xError.Error {
+func (r *OAuthTokenRepo) Delete(ctx context.Context, accessToken string) *xError.Error {
 	if accessToken == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
 	}

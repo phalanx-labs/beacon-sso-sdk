@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"connectrpc.com/connect"
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
@@ -130,5 +131,44 @@ func (s *AuthService) ChangePassword(ctx context.Context, req *pb.ChangePassword
 	}
 
 	// 转换响应
+	return resp.Msg, nil
+}
+
+// RevokeToken 注销用户 Token（登出）
+//
+// 该方法用于注销当前用户的 Access Token，实现用户登出功能。
+// 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+//
+// 使用场景：
+//   - 用户主动登出
+//   - Token 泄露后的紧急注销
+func (s *AuthService) RevokeToken(ctx context.Context, accessToken string, req *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error) {
+	// 验证并格式化 accessToken
+	authorization := strings.TrimSpace(accessToken)
+	if authorization == "" {
+		return nil, fmt.Errorf("access_token 不能为空")
+	}
+
+	if strings.HasPrefix(strings.ToLower(authorization), "bearer ") {
+		authorization = "Bearer " + authorization[7:]
+	} else if !strings.HasPrefix(authorization, "Bearer ") {
+		authorization = "Bearer " + authorization
+	}
+
+	// 构建 proto 请求
+	protoReq := connect.NewRequest(req)
+
+	// 添加 headers (App 认证凭证)
+	for k, v := range s.headers {
+		protoReq.Header().Set(k, v)
+	}
+	protoReq.Header().Set("authorization", authorization)
+
+	// 调用 proto client
+	resp, err := s.client.RevokeToken(ctx, protoReq)
+	if err != nil {
+		return nil, err
+	}
+
 	return resp.Msg, nil
 }

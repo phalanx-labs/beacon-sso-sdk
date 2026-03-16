@@ -350,6 +350,107 @@ func (x *GetCurrentUserResponse) GetUser() *User {
 	return nil
 }
 
+// GetUserByIDRequest 根据 ID 获取用户请求
+type GetUserByIDRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户 ID（雪花 ID 格式，必填）
+	UserId        string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserByIDRequest) Reset() {
+	*x = GetUserByIDRequest{}
+	mi := &file_beacon_sso_v1_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserByIDRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserByIDRequest) ProtoMessage() {}
+
+func (x *GetUserByIDRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beacon_sso_v1_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserByIDRequest.ProtoReflect.Descriptor instead.
+func (*GetUserByIDRequest) Descriptor() ([]byte, []int) {
+	return file_beacon_sso_v1_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetUserByIDRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+// GetUserByIDResponse 根据 ID 获取用户响应
+type GetUserByIDResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 基础响应信息
+	BaseResponse *generate.BaseResponse `protobuf:"bytes,1,opt,name=base_response,json=baseResponse,proto3" json:"base_response,omitempty"`
+	// 用户信息
+	User          *User `protobuf:"bytes,11,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserByIDResponse) Reset() {
+	*x = GetUserByIDResponse{}
+	mi := &file_beacon_sso_v1_user_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserByIDResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserByIDResponse) ProtoMessage() {}
+
+func (x *GetUserByIDResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beacon_sso_v1_user_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserByIDResponse.ProtoReflect.Descriptor instead.
+func (*GetUserByIDResponse) Descriptor() ([]byte, []int) {
+	return file_beacon_sso_v1_user_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetUserByIDResponse) GetBaseResponse() *generate.BaseResponse {
+	if x != nil {
+		return x.BaseResponse
+	}
+	return nil
+}
+
+func (x *GetUserByIDResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_beacon_sso_v1_user_proto protoreflect.FileDescriptor
 
 const file_beacon_sso_v1_user_proto_rawDesc = "" +
@@ -386,9 +487,15 @@ const file_beacon_sso_v1_user_proto_rawDesc = "" +
 	"\x15GetCurrentUserRequest\"{\n" +
 	"\x16GetCurrentUserResponse\x128\n" +
 	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12'\n" +
-	"\x04user\x18\v \x01(\v2\x13.beacon.sso.v1.UserR\x04user2l\n" +
+	"\x04user\x18\v \x01(\v2\x13.beacon.sso.v1.UserR\x04user\"-\n" +
+	"\x12GetUserByIDRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"x\n" +
+	"\x13GetUserByIDResponse\x128\n" +
+	"\rbase_response\x18\x01 \x01(\v2\x13.xBase.BaseResponseR\fbaseResponse\x12'\n" +
+	"\x04user\x18\v \x01(\v2\x13.beacon.sso.v1.UserR\x04user2\xc2\x01\n" +
 	"\vUserService\x12]\n" +
-	"\x0eGetCurrentUser\x12$.beacon.sso.v1.GetCurrentUserRequest\x1a%.beacon.sso.v1.GetCurrentUserResponseBDZBgithub.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pbb\x06proto3"
+	"\x0eGetCurrentUser\x12$.beacon.sso.v1.GetCurrentUserRequest\x1a%.beacon.sso.v1.GetCurrentUserResponse\x12T\n" +
+	"\vGetUserByID\x12!.beacon.sso.v1.GetUserByIDRequest\x1a\".beacon.sso.v1.GetUserByIDResponseBDZBgithub.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1;pbb\x06proto3"
 
 var (
 	file_beacon_sso_v1_user_proto_rawDescOnce sync.Once
@@ -402,25 +509,31 @@ func file_beacon_sso_v1_user_proto_rawDescGZIP() []byte {
 	return file_beacon_sso_v1_user_proto_rawDescData
 }
 
-var file_beacon_sso_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_beacon_sso_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_beacon_sso_v1_user_proto_goTypes = []any{
 	(*Role)(nil),                   // 0: beacon.sso.v1.Role
 	(*User)(nil),                   // 1: beacon.sso.v1.User
 	(*GetCurrentUserRequest)(nil),  // 2: beacon.sso.v1.GetCurrentUserRequest
 	(*GetCurrentUserResponse)(nil), // 3: beacon.sso.v1.GetCurrentUserResponse
-	(*generate.BaseResponse)(nil),  // 4: xBase.BaseResponse
+	(*GetUserByIDRequest)(nil),     // 4: beacon.sso.v1.GetUserByIDRequest
+	(*GetUserByIDResponse)(nil),    // 5: beacon.sso.v1.GetUserByIDResponse
+	(*generate.BaseResponse)(nil),  // 6: xBase.BaseResponse
 }
 var file_beacon_sso_v1_user_proto_depIdxs = []int32{
 	0, // 0: beacon.sso.v1.User.roles:type_name -> beacon.sso.v1.Role
-	4, // 1: beacon.sso.v1.GetCurrentUserResponse.base_response:type_name -> xBase.BaseResponse
+	6, // 1: beacon.sso.v1.GetCurrentUserResponse.base_response:type_name -> xBase.BaseResponse
 	1, // 2: beacon.sso.v1.GetCurrentUserResponse.user:type_name -> beacon.sso.v1.User
-	2, // 3: beacon.sso.v1.UserService.GetCurrentUser:input_type -> beacon.sso.v1.GetCurrentUserRequest
-	3, // 4: beacon.sso.v1.UserService.GetCurrentUser:output_type -> beacon.sso.v1.GetCurrentUserResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	6, // 3: beacon.sso.v1.GetUserByIDResponse.base_response:type_name -> xBase.BaseResponse
+	1, // 4: beacon.sso.v1.GetUserByIDResponse.user:type_name -> beacon.sso.v1.User
+	2, // 5: beacon.sso.v1.UserService.GetCurrentUser:input_type -> beacon.sso.v1.GetCurrentUserRequest
+	4, // 6: beacon.sso.v1.UserService.GetUserByID:input_type -> beacon.sso.v1.GetUserByIDRequest
+	3, // 7: beacon.sso.v1.UserService.GetCurrentUser:output_type -> beacon.sso.v1.GetCurrentUserResponse
+	5, // 8: beacon.sso.v1.UserService.GetUserByID:output_type -> beacon.sso.v1.GetUserByIDResponse
+	7, // [7:9] is the sub-list for method output_type
+	5, // [5:7] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_beacon_sso_v1_user_proto_init() }
@@ -436,7 +549,7 @@ func file_beacon_sso_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_beacon_sso_v1_user_proto_rawDesc), len(file_beacon_sso_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

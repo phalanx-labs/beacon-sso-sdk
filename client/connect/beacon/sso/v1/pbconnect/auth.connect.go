@@ -42,6 +42,8 @@ const (
 	// AuthServiceChangePasswordProcedure is the fully-qualified name of the AuthService's
 	// ChangePassword RPC.
 	AuthServiceChangePasswordProcedure = "/beacon.sso.v1.AuthService/ChangePassword"
+	// AuthServiceRevokeTokenProcedure is the fully-qualified name of the AuthService's RevokeToken RPC.
+	AuthServiceRevokeTokenProcedure = "/beacon.sso.v1.AuthService/RevokeToken"
 )
 
 // AuthServiceClient is a client for the beacon.sso.v1.AuthService service.
@@ -82,6 +84,19 @@ type AuthServiceClient interface {
 	// - 新密码必须满足强度要求（至少6位，包含字母和数字）
 	// - 新密码不能与旧密码相同
 	ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error)
+	// RevokeToken 注销用户 Token（登出）
+	//
+	// 该方法用于注销当前用户的 Access Token，实现用户登出功能。
+	// 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+	//
+	// 使用场景：
+	// - 用户主动登出
+	// - Token 泄露后的紧急注销
+	//
+	// 安全特性：
+	// - 需要有效的用户 Token 才能调用
+	// - 根据 RFC 7009 规范，即使 Token 不存在也返回成功（防止信息泄露）
+	RevokeToken(context.Context, *connect.Request[v1.RevokeTokenRequest]) (*connect.Response[v1.RevokeTokenResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the beacon.sso.v1.AuthService service. By default,
@@ -113,6 +128,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("ChangePassword")),
 			connect.WithClientOptions(opts...),
 		),
+		revokeToken: connect.NewClient[v1.RevokeTokenRequest, v1.RevokeTokenResponse](
+			httpClient,
+			baseURL+AuthServiceRevokeTokenProcedure,
+			connect.WithSchema(authServiceMethods.ByName("RevokeToken")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -121,6 +142,7 @@ type authServiceClient struct {
 	registerByEmail *connect.Client[v1.RegisterByEmailRequest, v1.RegisterByEmailResponse]
 	passwordLogin   *connect.Client[v1.PasswordLoginRequest, v1.PasswordLoginResponse]
 	changePassword  *connect.Client[v1.ChangePasswordRequest, v1.ChangePasswordResponse]
+	revokeToken     *connect.Client[v1.RevokeTokenRequest, v1.RevokeTokenResponse]
 }
 
 // RegisterByEmail calls beacon.sso.v1.AuthService.RegisterByEmail.
@@ -136,6 +158,11 @@ func (c *authServiceClient) PasswordLogin(ctx context.Context, req *connect.Requ
 // ChangePassword calls beacon.sso.v1.AuthService.ChangePassword.
 func (c *authServiceClient) ChangePassword(ctx context.Context, req *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error) {
 	return c.changePassword.CallUnary(ctx, req)
+}
+
+// RevokeToken calls beacon.sso.v1.AuthService.RevokeToken.
+func (c *authServiceClient) RevokeToken(ctx context.Context, req *connect.Request[v1.RevokeTokenRequest]) (*connect.Response[v1.RevokeTokenResponse], error) {
+	return c.revokeToken.CallUnary(ctx, req)
 }
 
 // AuthServiceHandler is an implementation of the beacon.sso.v1.AuthService service.
@@ -176,6 +203,19 @@ type AuthServiceHandler interface {
 	// - 新密码必须满足强度要求（至少6位，包含字母和数字）
 	// - 新密码不能与旧密码相同
 	ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error)
+	// RevokeToken 注销用户 Token（登出）
+	//
+	// 该方法用于注销当前用户的 Access Token，实现用户登出功能。
+	// 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+	//
+	// 使用场景：
+	// - 用户主动登出
+	// - Token 泄露后的紧急注销
+	//
+	// 安全特性：
+	// - 需要有效的用户 Token 才能调用
+	// - 根据 RFC 7009 规范，即使 Token 不存在也返回成功（防止信息泄露）
+	RevokeToken(context.Context, *connect.Request[v1.RevokeTokenRequest]) (*connect.Response[v1.RevokeTokenResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -203,6 +243,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("ChangePassword")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceRevokeTokenHandler := connect.NewUnaryHandler(
+		AuthServiceRevokeTokenProcedure,
+		svc.RevokeToken,
+		connect.WithSchema(authServiceMethods.ByName("RevokeToken")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/beacon.sso.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceRegisterByEmailProcedure:
@@ -211,6 +257,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServicePasswordLoginHandler.ServeHTTP(w, r)
 		case AuthServiceChangePasswordProcedure:
 			authServiceChangePasswordHandler.ServeHTTP(w, r)
+		case AuthServiceRevokeTokenProcedure:
+			authServiceRevokeTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -230,4 +278,8 @@ func (UnimplementedAuthServiceHandler) PasswordLogin(context.Context, *connect.R
 
 func (UnimplementedAuthServiceHandler) ChangePassword(context.Context, *connect.Request[v1.ChangePasswordRequest]) (*connect.Response[v1.ChangePasswordResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.AuthService.ChangePassword is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) RevokeToken(context.Context, *connect.Request[v1.RevokeTokenRequest]) (*connect.Response[v1.RevokeTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("beacon.sso.v1.AuthService.RevokeToken is not implemented"))
 }

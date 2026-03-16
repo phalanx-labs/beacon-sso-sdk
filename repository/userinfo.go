@@ -1,11 +1,11 @@
 package bSdkRepo
 
 import (
+	"context"
 	"encoding/json"
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	"github.com/gin-gonic/gin"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
 	bSdkCache "github.com/phalanx-labs/beacon-sso-sdk/repository/cache"
 	"github.com/redis/go-redis/v9"
@@ -40,14 +40,14 @@ func NewUserinfoRepo(db *gorm.DB, rdb *redis.Client) *UserinfoRepo {
 // GetCache 从缓存中获取用户信息
 //
 // 参数:
-//   - ctx: Gin 上下文对象，用于传递请求上下文。
+//   - ctx: 上下文对象，用于传递请求上下文。
 //   - accessToken: 访问令牌，用作缓存键。
 //
 // 返回值:
 //   - *bSdkModels.OAuthUserinfo: 缓存的用户信息对象。
 //   - bool: 是否命中缓存（true 表示命中，false 表示未命中）。
 //   - error: 操作过程中发生的错误。
-func (r *UserinfoRepo) GetCache(ctx *gin.Context, accessToken string) (*bSdkModels.OAuthUserinfo, bool, error) {
+func (r *UserinfoRepo) GetCache(ctx context.Context, accessToken string) (*bSdkModels.OAuthUserinfo, bool, error) {
 	if accessToken == "" {
 		return nil, false, nil
 	}
@@ -82,13 +82,13 @@ func (r *UserinfoRepo) GetCache(ctx *gin.Context, accessToken string) (*bSdkMode
 // StoreCache 将用户信息存储到缓存
 //
 // 参数:
-//   - ctx: Gin 上下文对象，用于传递请求上下文。
+//   - ctx: 上下文对象，用于传递请求上下文。
 //   - accessToken: 访问令牌，用作缓存键。
 //   - userinfo: 要缓存的用户信息对象。
 //
 // 返回值:
 //   - error: 操作过程中发生的错误。
-func (r *UserinfoRepo) StoreCache(ctx *gin.Context, accessToken string, userinfo *bSdkModels.OAuthUserinfo) error {
+func (r *UserinfoRepo) StoreCache(ctx context.Context, accessToken string, userinfo *bSdkModels.OAuthUserinfo) error {
 	if accessToken == "" || userinfo == nil {
 		return nil
 	}
@@ -115,12 +115,12 @@ func (r *UserinfoRepo) StoreCache(ctx *gin.Context, accessToken string, userinfo
 // DeleteCache 删除用户信息缓存
 //
 // 参数:
-//   - ctx: Gin 上下文对象，用于传递请求上下文。
+//   - ctx: 上下文对象，用于传递请求上下文。
 //   - accessToken: 访问令牌，用作缓存键。
 //
 // 返回值:
 //   - *xError.Error: 操作过程中发生的错误。
-func (r *UserinfoRepo) DeleteCache(ctx *gin.Context, accessToken string) *xError.Error {
+func (r *UserinfoRepo) DeleteCache(ctx context.Context, accessToken string) *xError.Error {
 	if accessToken == "" {
 		return xError.NewError(ctx, xError.ParameterEmpty, "令牌为空", false, nil)
 	}

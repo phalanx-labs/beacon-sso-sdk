@@ -78,6 +78,21 @@ message ChangePasswordResponse {
   xBase.BaseResponse base_response = 1;
 }
 
+// RevokeTokenRequest 注销 Token 请求
+message RevokeTokenRequest {
+  // Token 类型提示（可选）
+  // - access_token: 仅注销 Access Token
+  // - refresh_token: 仅注销 Refresh Token
+  // - 留空: 默认注销 Access Token
+  optional string token_type_hint = 1;
+}
+
+// RevokeTokenResponse 注销 Token 响应
+message RevokeTokenResponse {
+  // 基础响应信息
+  xBase.BaseResponse base_response = 1;
+}
+
 // AuthService 认证服务（需要 App 认证）
 //
 // 该服务的所有方法都需要在 metadata 中提供有效的 App 凭证：
@@ -122,4 +137,18 @@ service AuthService {
   // - 新密码必须满足强度要求（至少6位，包含字母和数字）
   // - 新密码不能与旧密码相同
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+
+  // RevokeToken 注销用户 Token（登出）
+  //
+  // 该方法用于注销当前用户的 Access Token，实现用户登出功能。
+  // 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+  //
+  // 使用场景：
+  // - 用户主动登出
+  // - Token 泄露后的紧急注销
+  //
+  // 安全特性：
+  // - 需要有效的用户 Token 才能调用
+  // - 根据 RFC 7009 规范，即使 Token 不存在也返回成功（防止信息泄露）
+  rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse);
 }

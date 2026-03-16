@@ -7,7 +7,6 @@ import (
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
-	"github.com/gin-gonic/gin"
 	bSdkClient "github.com/phalanx-labs/beacon-sso-sdk/client"
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
@@ -72,13 +71,13 @@ func (l *AuthLogic) RegisterByEmail(ctx context.Context, req *pb.RegisterByEmail
 // 登录成功后会将 Token 缓存到 Redis，以支持后续的 Token 验证和刷新功能。
 //
 // 参数说明:
-//   - ctx: Gin 上下文，用于控制请求的生命周期和超时控制。
+//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
 //   - req: 密码登录请求，包含用户名、密码和权限范围。
 //
 // 返回值:
 //   - *pb.PasswordLoginResponse: 包含访问令牌、刷新令牌等信息。
 //   - error: 如果登录失败（如凭证无效），则返回非 nil 的错误。
-func (l *AuthLogic) PasswordLogin(ctx *gin.Context, req *pb.PasswordLoginRequest) (*pb.PasswordLoginResponse, error) {
+func (l *AuthLogic) PasswordLogin(ctx context.Context, req *pb.PasswordLoginRequest) (*pb.PasswordLoginResponse, error) {
 	l.log.Info(ctx, "PasswordLogin - 处理密码登录请求")
 
 	// 调用 gRPC 服务
@@ -121,4 +120,37 @@ func (l *AuthLogic) PasswordLogin(ctx *gin.Context, req *pb.PasswordLoginRequest
 func (l *AuthLogic) ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error) {
 	l.log.Info(ctx, "ChangePassword - 处理修改密码请求")
 	return l.ssoClient.ChangePassword(ctx, req)
+}
+
+// RevokeToken 注销用户 Token（登出）
+//
+// 该方法封装了 gRPC 调用，用于注销当前用户的 Access Token，实现用户登出功能。
+// 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+// 注销成功后会尝试清理本地缓存的 Token，失败仅记录警告日志不阻断流程。
+//
+// 参数说明:
+//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+//   - accessToken: 用户访问令牌（Bearer 格式或裸 Token）。
+//   - req: 注销请求，可选 token_type_hint 指定注销类型。
+//
+// 返回值:
+//   - *pb.RevokeTokenResponse: 注销结果。
+//   - error: 注销失败时返回错误。
+func (l *AuthLogic) RevokeToken(ctx context.Context, accessToken string, req *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error) {
+	l.log.Info(ctx, "RevokeToken - 处理注销令牌请求")
+
+	// 调用 gRPC 服务
+	resp, err := l.ssoClient.RevokeToken(ctx, accessToken, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// 尝试清理本地缓存的 Token，失败仅记录警告日志不阻断流程
+	if delErr := l.tokenData.Delete(ctx, accessToken); delErr != nil {
+		l.log.Warn(ctx, "RevokeToken - 清理令牌缓存失败",
+			slog.String("error", delErr.Error()),
+		)
+	}
+
+	return resp, nil
 }

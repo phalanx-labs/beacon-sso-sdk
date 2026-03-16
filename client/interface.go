@@ -85,6 +85,25 @@ type IAuth interface {
 	//   - *pb.ChangePasswordResponse: 包含基础响应信息。
 	//   - error: 如果修改失败（如旧密码错误），则返回非 nil 的错误。
 	ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error)
+
+	// RevokeToken 注销用户 Token（登出）
+	//
+	// 该方法用于注销当前用户的 Access Token，实现用户登出功能。
+	// 符合 RFC 7009 OAuth 2.0 Token Revocation 规范。
+	//
+	// 使用场景：
+	//   - 用户主动登出
+	//   - Token 泄露后的紧急注销
+	//
+	// 参数说明:
+	//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+	//   - accessToken: 用户访问令牌（Bearer 格式或裸 Token）。
+	//   - req: 注销请求，可选 token_type_hint 指定注销类型。
+	//
+	// 返回值:
+	//   - *pb.RevokeTokenResponse: 注销结果。
+	//   - error: 注销失败时返回错误。
+	RevokeToken(ctx context.Context, accessToken string, req *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error)
 }
 
 // IUser 定义了用户服务操作的标准接口
@@ -104,6 +123,25 @@ type IUser interface {
 	//   - *pb.GetCurrentUserResponse: 用户信息响应。
 	//   - error: 获取失败时返回错误。
 	GetCurrentUser(ctx context.Context, accessToken string) (*pb.GetCurrentUserResponse, error)
+
+	// GetUserByID 根据用户 ID 获取用户详细信息
+	//
+	// 该方法允许已认证的 App 查询指定用户的完整信息。
+	// 主要用于接入 App 需要获取其他用户信息的场景。
+	//
+	// 与 GetCurrentUser 的区别：
+	//   - GetCurrentUser: 从 Token 中获取当前登录用户信息
+	//   - GetUserByID: 通过 user_id 参数获取任意用户信息
+	//
+	// 参数说明:
+	//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+	//   - accessToken: 用户访问令牌（Bearer 格式或裸 Token）。
+	//   - req: 根据 ID 获取用户请求，包含用户 ID。
+	//
+	// 返回值:
+	//   - *pb.GetUserByIDResponse: 用户信息响应。
+	//   - error: 获取失败时返回错误。
+	GetUserByID(ctx context.Context, accessToken string, req *pb.GetUserByIDRequest) (*pb.GetUserByIDResponse, error)
 }
 
 // IMerchant 定义了商户服务操作的标准接口

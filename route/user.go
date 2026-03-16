@@ -9,10 +9,12 @@ import (
 //
 // 该路由组包含以下端点：
 //   - GET /user/userinfo - 获取当前用户信息（需要认证）
+//   - GET /user/by-id - 根据ID获取用户信息（需要认证）
 func (r *Route) UserRouter(route *gin.RouterGroup) {
 	group := route.Group("/user")
 
 	userHandler := bSdkHandler.NewUserHandler(r.ctx)
 
 	group.GET("/userinfo", userHandler.GetCurrentUser)
+	group.GET("/by-id", userHandler.GetUserByID)
 }
