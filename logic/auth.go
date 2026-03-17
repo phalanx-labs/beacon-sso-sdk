@@ -2,13 +2,18 @@ package bSdkLogic
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"net/http"
 	"time"
 
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
 	xCtxUtil "github.com/bamboo-services/bamboo-base-go/common/utility/context"
+	xEnv "github.com/bamboo-services/bamboo-base-go/defined/env"
+	"github.com/go-resty/resty/v2"
 	bSdkClient "github.com/phalanx-labs/beacon-sso-sdk/client"
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
+	bSdkConst "github.com/phalanx-labs/beacon-sso-sdk/constant"
 	bSdkModels "github.com/phalanx-labs/beacon-sso-sdk/models"
 	bSdkRepo "github.com/phalanx-labs/beacon-sso-sdk/repository"
 	bSdkUtil "github.com/phalanx-labs/beacon-sso-sdk/utility"
@@ -153,4 +158,94 @@ func (l *AuthLogic) RevokeToken(ctx context.Context, accessToken string, req *pb
 	}
 
 	return resp, nil
+}
+
+// RefreshTokenResponse 刷新令牌响应结构
+//
+// 该结构体定义了刷新令牌成功后返回的数据格式，符合 OAuth 2.0 Token Response 规范。
+type RefreshTokenResponse struct {
+	// AccessToken 新的访问令牌
+	AccessToken string `json:"access_token"`
+	// TokenType 令牌类型（通常为 "Bearer"）
+	TokenType string `json:"token_type"`
+	// ExpiresIn 访问令牌的有效期（秒）
+	ExpiresIn int64 `json:"expires_in"`
+	// RefreshToken 新的刷新令牌（Token Rotation 机制）
+	RefreshToken string `json:"refresh_token,omitempty"`
+	// Scope 授权范围
+	Scope string `json:"scope,omitempty"`
+}
+
+// RefreshToken 使用 Refresh Token 获取新的 Access Token
+//
+// 该方法通过 HTTP REST API 实现 OAuth 2.0 Refresh Token Grant。
+// 刷新成功后会更新本地缓存的 Token，支持 Token Rotation 机制。
+//
+// 参数说明:
+//   - ctx: 上下文，用于控制请求的生命周期和超时控制。
+//   - refreshToken: 刷新令牌。
+//
+// 返回值:
+//   - *RefreshTokenResponse: 包含新的访问令牌、刷新令牌等信息。
+//   - error: 刷新失败（如 Refresh Token 无效或已过期）时返回错误。
+func (l *AuthLogic) RefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenResponse, error) {
+	l.log.Info(ctx, "RefreshToken - 处理刷新令牌请求")
+
+	if refreshToken == "" {
+		return nil, fmt.Errorf("refresh_token 不能为空")
+	}
+
+	// 获取 Token 端点配置
+	tokenURI := xEnv.GetEnvString(bSdkConst.EnvSsoEndpointTokenURI, "")
+	if tokenURI == "" {
+		return nil, fmt.Errorf("令牌端点未配置")
+	}
+
+	// 获取客户端凭证
+	clientID := xEnv.GetEnvString(bSdkConst.EnvSsoClientID, "")
+	clientSecret := xEnv.GetEnvString(bSdkConst.EnvSsoClientSecret, "")
+	if clientID == "" || clientSecret == "" {
+		return nil, fmt.Errorf("客户端凭证配置缺失")
+	}
+
+	// 构建请求
+	client := resty.New()
+	var respBody RefreshTokenResponse
+	resp, reqErr := client.R().
+		SetContext(ctx).
+		SetHeader("Accept", "application/json").
+		SetHeader("Content-Type", "application/x-www-form-urlencoded").
+		SetBasicAuth(clientID, clientSecret).
+		SetFormData(map[string]string{
+			"grant_type":    "refresh_token",
+			"refresh_token": refreshToken,
+		}).
+		SetResult(&respBody).
+		Post(tokenURI)
+
+	if reqErr != nil {
+		return nil, fmt.Errorf("刷新令牌请求失败: %w", reqErr)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("刷新令牌失败，状态码: %d, 响应: %s", resp.StatusCode(), resp.String())
+	}
+
+	// 更新本地缓存的 Token
+	if respBody.AccessToken != "" {
+		expiry := time.Now().Add(time.Duration(respBody.ExpiresIn) * time.Second)
+		cacheToken := &bSdkModels.CacheOAuthToken{
+			AccessToken:  respBody.AccessToken,
+			TokenType:    respBody.TokenType,
+			RefreshToken: respBody.RefreshToken,
+			Expiry:       expiry.Format(time.RFC3339),
+		}
+		if storeErr := l.tokenData.Store(ctx, cacheToken); storeErr != nil {
+			l.log.Warn(ctx, "RefreshToken - 缓存令牌失败",
+				slog.String("error", storeErr.Error()),
+			)
+		}
+	}
+
+	return &respBody, nil
 }

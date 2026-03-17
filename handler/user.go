@@ -5,10 +5,10 @@ import (
 
 	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xLog "github.com/bamboo-services/bamboo-base-go/common/log"
-	xHttp "github.com/bamboo-services/bamboo-base-go/defined/http"
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
+	bSdkUtil "github.com/phalanx-labs/beacon-sso-sdk/utility"
 )
 
 // UserHandler 用户相关请求处理器
@@ -38,9 +38,9 @@ func NewUserHandler(ctx context.Context) *UserHandler {
 func (h *UserHandler) GetCurrentUser(ctx *gin.Context) {
 	h.log.Info(ctx, "GetCurrentUser - 获取当前用户信息")
 
-	accessToken := xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
-	if accessToken == "" {
-		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要访问令牌参数", false, nil))
+	accessToken, xErr := bSdkUtil.GetAccessToken(ctx)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
 		return
 	}
 
@@ -72,10 +72,10 @@ func (h *UserHandler) GetCurrentUser(ctx *gin.Context) {
 func (h *UserHandler) GetUserByID(ctx *gin.Context) {
 	h.log.Info(ctx, "GetUserByID - 根据ID获取用户信息")
 
-	// 获取 Authorization Token
-	accessToken := xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
-	if accessToken == "" {
-		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要访问令牌参数", false, nil))
+	// 从 Context 获取已验证的 Token
+	accessToken, xErr := bSdkUtil.GetAccessToken(ctx)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
 		return
 	}
 

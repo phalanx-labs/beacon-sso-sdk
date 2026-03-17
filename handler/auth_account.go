@@ -8,6 +8,7 @@ import (
 	xResult "github.com/bamboo-services/bamboo-base-go/major/result"
 	"github.com/gin-gonic/gin"
 	pb "github.com/phalanx-labs/beacon-sso-sdk/client/api/beacon/sso/v1"
+	bSdkUtil "github.com/phalanx-labs/beacon-sso-sdk/utility"
 )
 
 // AccountHandler 账户处理的请求器
@@ -200,10 +201,10 @@ func (h *AccountHandler) ChangePassword(ctx *gin.Context) {
 func (h *AccountHandler) RevokeToken(ctx *gin.Context) {
 	h.log.Info(ctx, "RevokeToken - 处理注销令牌请求")
 
-	// 获取 Authorization Token
-	accessToken := ctx.GetHeader("Authorization")
-	if accessToken == "" {
-		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "需要访问令牌参数", false, nil))
+	// 从 Context 获取已验证的 Token
+	accessToken, xErr := bSdkUtil.GetAccessToken(ctx)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
 		return
 	}
 
@@ -224,4 +225,51 @@ func (h *AccountHandler) RevokeToken(ctx *gin.Context) {
 	}
 
 	xResult.SuccessHasData(ctx, "注销令牌成功", resp)
+}
+
+// RefreshTokenRequest 刷新令牌请求结构
+type RefreshTokenRequest struct {
+	// RefreshToken 刷新令牌
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+// RefreshToken 刷新访问令牌
+//
+// 该接口实现了 OAuth 2.0 Refresh Token Grant，用于使用 Refresh Token
+// 获取新的 Access Token。刷新成功后会返回新的令牌信息。
+//
+// @Summary     [公开] 刷新令牌
+// @Description 使用 Refresh Token 获取新的 Access Token（OAuth 2.0 Refresh Token Grant）
+// @Tags        账户接口
+// @Accept      json
+// @Produce     json
+// @Param       request  body  RefreshTokenRequest  true  "刷新令牌请求"
+// @Success     200  {object}  xBase.BaseResponse{data=bSdkLogic.RefreshTokenResponse}  "刷新成功"
+// @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
+// @Failure     401  {object}  xBase.BaseResponse  "刷新令牌无效或已过期"
+// @Router      /account/token/refresh [POST]
+func (h *AccountHandler) RefreshToken(ctx *gin.Context) {
+	h.log.Info(ctx, "RefreshToken - 处理刷新令牌请求")
+
+	// 绑定请求体
+	var req RefreshTokenRequest
+	if bindErr := ctx.ShouldBindJSON(&req); bindErr != nil {
+		_ = ctx.Error(xError.NewError(ctx, xError.ParameterError, "请求参数格式错误", false, bindErr))
+		return
+	}
+
+	// 参数校验
+	if req.RefreshToken == "" {
+		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty, "refresh_token 不能为空", false, nil))
+		return
+	}
+
+	// 调用业务逻辑
+	resp, err := h.service.authLogic.RefreshToken(ctx, req.RefreshToken)
+	if err != nil {
+		_ = ctx.Error(xError.NewError(ctx, xError.Unauthorized, xError.ErrMessage(err.Error()), false, err))
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "刷新令牌成功", resp)
 }

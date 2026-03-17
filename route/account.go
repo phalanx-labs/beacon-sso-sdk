@@ -11,6 +11,7 @@ import (
 // 该路由组包含以下端点：
 //   - POST /account/register/email - 邮箱注册（公开）
 //   - POST /account/login/password - 密码登录（公开）
+//   - POST /account/token/refresh - 刷新令牌（公开）
 //   - POST /account/password/change - 修改密码（需要认证）
 //   - POST /account/token/revoke - 注销令牌（需要认证）
 func (r *Route) AccountRouter(route *gin.RouterGroup) {
@@ -21,6 +22,7 @@ func (r *Route) AccountRouter(route *gin.RouterGroup) {
 	// 公开接口
 	group.POST("/register/email", accountHandler.RegisterByEmail)
 	group.POST("/login/password", accountHandler.PasswordLogin)
+	group.POST("/token/refresh", accountHandler.RefreshToken)
 
 	// 需要认证的接口
 	group.POST("/password/change", bSdkMiddle.CheckAuth(r.ctx), accountHandler.ChangePassword)

@@ -3,6 +3,7 @@ package bSdkRoute
 import (
 	"github.com/gin-gonic/gin"
 	bSdkHandler "github.com/phalanx-labs/beacon-sso-sdk/handler"
+	bSdkMiddle "github.com/phalanx-labs/beacon-sso-sdk/middleware"
 )
 
 // UserRouter 注册用户相关路由
@@ -15,6 +16,7 @@ func (r *Route) UserRouter(route *gin.RouterGroup) {
 
 	userHandler := bSdkHandler.NewUserHandler(r.ctx)
 
-	group.GET("/userinfo", userHandler.GetCurrentUser)
-	group.GET("/by-id", userHandler.GetUserByID)
+	// 需要认证的接口
+	group.GET("/userinfo", bSdkMiddle.CheckAuth(r.ctx), userHandler.GetCurrentUser)
+	group.GET("/by-id", bSdkMiddle.CheckAuth(r.ctx), userHandler.GetUserByID)
 }

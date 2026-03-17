@@ -1,6 +1,7 @@
 package bSdkUtil
 
 import (
+	xError "github.com/bamboo-services/bamboo-base-go/common/error"
 	xHttp "github.com/bamboo-services/bamboo-base-go/defined/http"
 	"github.com/gin-gonic/gin"
 )
@@ -20,4 +21,23 @@ func GetAuthorization(ctx *gin.Context) string {
 		return get.(string)
 	}
 	return ""
+}
+
+// GetAccessToken 从 Gin Context 获取已验证的 Access Token
+//
+// 该方法用于从 Gin 上下文中提取经过 CheckAuth 中间件验证的 Access Token。
+// 配合 CheckAuth 中间件使用，避免 Handler 层重复获取和验证 Token。
+//
+// 参数:
+//   - ctx: Gin 的上下文对象，必须经过 CheckAuth 中间件处理。
+//
+// 返回值:
+//   - string: 访问令牌字符串。
+//   - *xError.Error: 如果 Token 不存在则返回错误。
+func GetAccessToken(ctx *gin.Context) (string, *xError.Error) {
+	token, exists := ctx.Get(xHttp.HeaderAuthorization.String())
+	if !exists {
+		return "", xError.NewError(ctx, xError.ParameterEmpty, "需要访问令牌参数", false, nil)
+	}
+	return token.(string), nil
 }
