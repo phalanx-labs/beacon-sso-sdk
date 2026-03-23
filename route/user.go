@@ -12,7 +12,7 @@ import (
 //   - GET /user/userinfo - 获取当前用户信息（需要认证）
 //   - GET /user/by-id - 根据ID获取用户信息（需要认证）
 func (r *Route) UserRouter(route *gin.RouterGroup) {
-	group := route.Group("/user")
+	group := route.Group("/sso/user")
 
 	userHandler := bSdkHandler.NewUserHandler(r.ctx)
 

@@ -12,7 +12,7 @@ import (
 //   - GET /oauth/callback - OAuth 登录回调
 //   - POST /oauth/logout - OAuth 登出
 func (r *Route) OAuthRouter(route *gin.RouterGroup) {
-	group := route.Group("/oauth")
+	group := route.Group("/sso/oauth")
 
 	authHandler := bSdkHandler.NewAuthHandler(r.ctx)
 

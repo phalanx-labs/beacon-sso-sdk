@@ -15,7 +15,7 @@ import (
 //   - POST /account/password/change - 修改密码（需要认证）
 //   - POST /account/token/revoke - 注销令牌（需要认证）
 func (r *Route) AccountRouter(route *gin.RouterGroup) {
-	group := route.Group("/account")
+	group := route.Group("/sso/account")
 
 	accountHandler := bSdkHandler.NewAccountHandler(r.ctx)
 
