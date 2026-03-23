@@ -1,4 +1,30 @@
 definitions:
+  bSdkHandler.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        description: RefreshToken 刷新令牌
+        type: string
+    required:
+    - refresh_token
+    type: object
+  bSdkLogic.RefreshTokenResponse:
+    properties:
+      access_token:
+        description: AccessToken 新的访问令牌
+        type: string
+      expires_in:
+        description: ExpiresIn 访问令牌的有效期（秒）
+        type: integer
+      refresh_token:
+        description: RefreshToken 新的刷新令牌（Token Rotation 机制）
+        type: string
+      scope:
+        description: Scope 授权范围
+        type: string
+      token_type:
+        description: TokenType 令牌类型（通常为 "Bearer"）
+        type: string
+    type: object
   oauth2.Token:
     properties:
       access_token:
@@ -239,7 +265,7 @@ info:
   title: Beacon SSO SDK 聚合文档
   version: v1.0.0
 paths:
-  /account/login/password:
+  /sso/account/login/password:
     post:
       consumes:
       - application/json
@@ -278,7 +304,7 @@ paths:
       summary: '[公开] 密码登录'
       tags:
       - 账户接口
-  /account/password/change:
+  /sso/account/password/change:
     post:
       consumes:
       - application/json
@@ -322,7 +348,7 @@ paths:
       summary: '[用户] 修改密码'
       tags:
       - 账户接口
-  /account/register/email:
+  /sso/account/register/email:
     post:
       consumes:
       - application/json
@@ -357,7 +383,42 @@ paths:
       summary: '[公开] 邮箱注册'
       tags:
       - 账户接口
-  /account/token/revoke:
+  /sso/account/token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 使用 Refresh Token 获取新的 Access Token（OAuth 2.0 Refresh Token Grant）
+      parameters:
+      - description: 刷新令牌请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bSdkHandler.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 刷新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/xBase.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/bSdkLogic.RefreshTokenResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+        "401":
+          description: 刷新令牌无效或已过期
+          schema:
+            $ref: '#/definitions/xBase.BaseResponse'
+      summary: '[公开] 刷新令牌'
+      tags:
+      - 账户接口
+  /sso/account/token/revoke:
     post:
       consumes:
       - application/json
@@ -402,7 +463,7 @@ paths:
       summary: '[用户] 注销令牌'
       tags:
       - 账户接口
-  /oauth/callback:
+  /sso/oauth/callback:
     get:
       consumes:
       - application/json
@@ -441,7 +502,7 @@ paths:
       summary: '[公开] OAuth2 登录回调'
       tags:
       - OAuth接口
-  /oauth/login:
+  /sso/oauth/login:
     get:
       consumes:
       - application/json
@@ -456,7 +517,7 @@ paths:
       summary: '[公开] OAuth2 登录跳转'
       tags:
       - OAuth接口
-  /oauth/logout:
+  /sso/oauth/logout:
     post:
       consumes:
       - application/json
@@ -489,7 +550,7 @@ paths:
       summary: '[用户] OAuth2 登出'
       tags:
       - OAuth接口
-  /user/by-id:
+  /sso/user/by-id:
     get:
       consumes:
       - application/json
@@ -528,7 +589,7 @@ paths:
       summary: '[用户] 根据ID获取用户'
       tags:
       - 用户接口
-  /user/userinfo:
+  /sso/user/userinfo:
     get:
       consumes:
       - application/json

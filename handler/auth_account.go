@@ -44,7 +44,7 @@ func NewAccountHandler(ctx context.Context) *AccountHandler {
 // @Success     200  {object}  xBase.BaseResponse{data=pb.RegisterByEmailResponse}  "注册成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
-// @Router      /account/register/email [POST]
+// @Router      /sso/account/register/email [POST]
 func (h *AccountHandler) RegisterByEmail(ctx *gin.Context) {
 	h.log.Info(ctx, "RegisterByEmail - 处理邮箱注册请求")
 
@@ -98,7 +98,7 @@ func (h *AccountHandler) RegisterByEmail(ctx *gin.Context) {
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse  "凭证无效"
 // @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
-// @Router      /account/login/password [POST]
+// @Router      /sso/account/login/password [POST]
 func (h *AccountHandler) PasswordLogin(ctx *gin.Context) {
 	h.log.Info(ctx, "PasswordLogin - 处理密码登录请求")
 
@@ -150,7 +150,7 @@ func (h *AccountHandler) PasswordLogin(ctx *gin.Context) {
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse  "未授权或旧密码错误"
 // @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
-// @Router      /account/password/change [POST]
+// @Router      /sso/account/password/change [POST]
 func (h *AccountHandler) ChangePassword(ctx *gin.Context) {
 	h.log.Info(ctx, "ChangePassword - 处理修改密码请求")
 
@@ -197,7 +197,7 @@ func (h *AccountHandler) ChangePassword(ctx *gin.Context) {
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse  "未授权或令牌失效"
 // @Failure     500  {object}  xBase.BaseResponse  "服务器内部错误"
-// @Router      /account/token/revoke [POST]
+// @Router      /sso/account/token/revoke [POST]
 func (h *AccountHandler) RevokeToken(ctx *gin.Context) {
 	h.log.Info(ctx, "RevokeToken - 处理注销令牌请求")
 
@@ -247,7 +247,7 @@ type RefreshTokenRequest struct {
 // @Success     200  {object}  xBase.BaseResponse{data=bSdkLogic.RefreshTokenResponse}  "刷新成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse  "刷新令牌无效或已过期"
-// @Router      /account/token/refresh [POST]
+// @Router      /sso/account/token/refresh [POST]
 func (h *AccountHandler) RefreshToken(ctx *gin.Context) {
 	h.log.Info(ctx, "RefreshToken - 处理刷新令牌请求")
 

@@ -22,7 +22,7 @@ import (
 // @Accept      json
 // @Produce     json
 // @Success     302  {string}  string  "重定向到 SSO 授权页面"
-// @Router      /oauth/login [GET]
+// @Router      /sso/oauth/login [GET]
 func (h *AuthHandler) Login(ctx *gin.Context) {
 	h.log.Info(ctx, "Login - 处理登录跳转请求")
 
@@ -55,7 +55,7 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 // @Success     200  {object}  xBase.BaseResponse{data=oauth2.Token}  "登录成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse  "用户拒绝授权或授权失败"
-// @Router      /oauth/callback [GET]
+// @Router      /sso/oauth/callback [GET]
 func (h *AuthHandler) Callback(ctx *gin.Context) {
 	h.log.Info(ctx, "Callback - 处理登录回调请求")
 
@@ -127,7 +127,7 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 // @Param       token_type     query   string  false  "令牌类型"  Enums(access_token, refresh_token)  default(access_token)
 // @Success     200  {object}  xBase.BaseResponse  "登出成功"
 // @Failure     400  {object}  xBase.BaseResponse  "请求参数错误"
-// @Router      /oauth/logout [POST]
+// @Router      /sso/oauth/logout [POST]
 func (h *AuthHandler) Logout(ctx *gin.Context) {
 	h.log.Info(ctx, "Logout - 处理登出请求")
 

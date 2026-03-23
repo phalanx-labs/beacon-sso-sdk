@@ -15,7 +15,7 @@ const docTemplatebeacon_sso_sdk = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/login/password": {
+        "/sso/account/login/password": {
             "post": {
                 "description": "使用用户名和密码进行登录（OAuth 2.0 Password Grant），返回访问令牌和刷新令牌",
                 "consumes": [
@@ -79,7 +79,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/account/password/change": {
+        "/sso/account/password/change": {
             "post": {
                 "description": "修改用户密码，普通模式需要验证旧密码，强制重置模式可跳过旧密码验证",
                 "consumes": [
@@ -150,7 +150,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/account/register/email": {
+        "/sso/account/register/email": {
             "post": {
                 "description": "通过邮箱验证码完成用户注册，注册成功后自动生成登录 Token",
                 "consumes": [
@@ -208,7 +208,65 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/account/token/revoke": {
+        "/sso/account/token/refresh": {
+            "post": {
+                "description": "使用 Refresh Token 获取新的 Access Token（OAuth 2.0 Refresh Token Grant）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户接口"
+                ],
+                "summary": "[公开] 刷新令牌",
+                "parameters": [
+                    {
+                        "description": "刷新令牌请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bSdkHandler.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "刷新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bSdkLogic.RefreshTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "刷新令牌无效或已过期",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sso/account/token/revoke": {
             "post": {
                 "description": "注销当前用户的访问令牌或刷新令牌，实现用户登出功能（符合 RFC 7009 OAuth 2.0 Token Revocation）",
                 "consumes": [
@@ -280,7 +338,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/oauth/callback": {
+        "/sso/oauth/callback": {
             "get": {
                 "description": "处理 SSO 提供商的回调，通过授权码换取访问令牌",
                 "consumes": [
@@ -343,7 +401,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/oauth/login": {
+        "/sso/oauth/login": {
             "get": {
                 "description": "生成 OAuth2 授权链接并重定向到 SSO 提供商的授权页面",
                 "consumes": [
@@ -366,7 +424,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/oauth/logout": {
+        "/sso/oauth/logout": {
             "post": {
                 "description": "注销访问令牌或刷新令牌，调用 revocation endpoint 进行注销",
                 "consumes": [
@@ -415,7 +473,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/user/by-id": {
+        "/sso/user/by-id": {
             "get": {
                 "description": "根据用户ID获取指定用户的详细信息，包括基础信息、联系方式、验证状态和角色列表",
                 "consumes": [
@@ -478,7 +536,7 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
-        "/user/userinfo": {
+        "/sso/user/userinfo": {
             "get": {
                 "description": "通过访问令牌获取当前登录用户的详细信息，包括基础信息、联系方式、验证状态和角色列表",
                 "consumes": [
@@ -536,6 +594,43 @@ const docTemplatebeacon_sso_sdk = `{
         }
     },
     "definitions": {
+        "bSdkHandler.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "description": "RefreshToken 刷新令牌",
+                    "type": "string"
+                }
+            }
+        },
+        "bSdkLogic.RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "AccessToken 新的访问令牌",
+                    "type": "string"
+                },
+                "expires_in": {
+                    "description": "ExpiresIn 访问令牌的有效期（秒）",
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "description": "RefreshToken 新的刷新令牌（Token Rotation 机制）",
+                    "type": "string"
+                },
+                "scope": {
+                    "description": "Scope 授权范围",
+                    "type": "string"
+                },
+                "token_type": {
+                    "description": "TokenType 令牌类型（通常为 \"Bearer\"）",
+                    "type": "string"
+                }
+            }
+        },
         "oauth2.Token": {
             "type": "object",
             "properties": {

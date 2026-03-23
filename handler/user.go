@@ -34,7 +34,7 @@ func NewUserHandler(ctx context.Context) *UserHandler {
 // @Success     200  {object}  xBase.BaseResponse{data=pb.User}  "获取成功"
 // @Failure     400  {object}  xBase.BaseResponse               "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse               "未授权或令牌失效"
-// @Router      /user/userinfo [GET]
+// @Router      /sso/user/userinfo [GET]
 func (h *UserHandler) GetCurrentUser(ctx *gin.Context) {
 	h.log.Info(ctx, "GetCurrentUser - 获取当前用户信息")
 
@@ -68,7 +68,7 @@ func (h *UserHandler) GetCurrentUser(ctx *gin.Context) {
 // @Success     200  {object}  xBase.BaseResponse{data=pb.User}  "获取成功"
 // @Failure     400  {object}  xBase.BaseResponse               "请求参数错误"
 // @Failure     401  {object}  xBase.BaseResponse               "未授权或令牌失效"
-// @Router      /user/by-id [GET]
+// @Router      /sso/user/by-id [GET]
 func (h *UserHandler) GetUserByID(ctx *gin.Context) {
 	h.log.Info(ctx, "GetUserByID - 根据ID获取用户信息")
 
