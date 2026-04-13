@@ -473,6 +473,69 @@ const docTemplatebeacon_sso_sdk = `{
                 }
             }
         },
+        "/sso/oauth/refresh": {
+            "post": {
+                "description": "使用 Refresh Token 获取新的 Access Token 和 Refresh Token（OAuth 2.0 Refresh Token Grant）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth接口"
+                ],
+                "summary": "[公开] OAuth2 刷新令牌",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer 当前的 Access Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "当前的 Refresh Token",
+                        "name": "X-Refresh-Token",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "刷新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/xBase.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/oauth2.Token"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "令牌无效或已过期",
+                        "schema": {
+                            "$ref": "#/definitions/xBase.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/sso/user/by-id": {
             "get": {
                 "description": "根据用户ID获取指定用户的详细信息，包括基础信息、联系方式、验证状态和角色列表",
@@ -548,7 +611,7 @@ const docTemplatebeacon_sso_sdk = `{
                 "tags": [
                     "用户接口"
                 ],
-                "summary": "[玩家] 用户信息",
+                "summary": "[用户] 用户信息",
                 "parameters": [
                     {
                         "type": "string",

@@ -25,7 +25,7 @@ func NewUserHandler(ctx context.Context) *UserHandler {
 
 // GetCurrentUser 获取当前用户信
 //
-// @Summary     [玩家] 用户信息
+// @Summary     [用户] 用户信息
 // @Description 通过访问令牌获取当前登录用户的详细信息，包括基础信息、联系方式、验证状态和角色列表
 // @Tags        用户接口
 // @Accept      json

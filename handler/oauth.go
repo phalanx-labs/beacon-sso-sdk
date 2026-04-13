@@ -154,3 +154,51 @@ func (h *AuthHandler) Logout(ctx *gin.Context) {
 
 	xResult.Success(ctx, "登出成功")
 }
+
+// Refresh 使用 Refresh Token 刷新访问令牌
+//
+// 该接口实现了 OAuth 2.0 Refresh Token Grant，用于在 Access Token 过期后
+// 使用 Refresh Token 获取新的 Access Token 和 Refresh Token。
+// 需要同时提供当前的 Access Token（用于定位缓存会话）和 Refresh Token（用于兑换新令牌）。
+//
+// @Summary     [公开] OAuth2 刷新令牌
+// @Description 使用 Refresh Token 获取新的 Access Token 和 Refresh Token（OAuth 2.0 Refresh Token Grant）
+// @Tags        OAuth接口
+// @Accept      json
+// @Produce     json
+// @Param       Authorization   header  string  true  "Bearer 当前的 Access Token"
+// @Param       X-Refresh-Token header  string  true  "当前的 Refresh Token"
+// @Success     200  {object}  xBase.BaseResponse{data=oauth2.Token}  "刷新成功"
+// @Failure     400  {object}  xBase.BaseResponse               "请求参数错误"
+// @Failure     401  {object}  xBase.BaseResponse               "令牌无效或已过期"
+// @Router      /sso/oauth/refresh [POST]
+func (h *AuthHandler) Refresh(ctx *gin.Context) {
+	h.log.Info(ctx, "Refresh - 处理刷新令牌请求")
+
+	// 从请求头提取双令牌
+	getAT := xHttp.GetToken(ctx, xHttp.HeaderAuthorization)
+	getRT := xHttp.GetToken(ctx, xHttp.HeaderRefreshToken)
+
+	// 参数完整性校验
+	if getAT == "" || getRT == "" {
+		_ = ctx.Error(xError.NewError(ctx, xError.ParameterEmpty,
+			"需要 Authorization (Access Token) 和 X-Refresh-Token (Refresh Token)", false, nil))
+		return
+	}
+
+	// 通过 Access Token 从 Redis 缓存中获取令牌信息
+	cacheToken, xErr := h.service.oauthLogic.GetToken(ctx, getAT)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	// 使用 Refresh Token 执行令牌刷新（内部含 RT 一致性校验 + 缓存更新）
+	newToken, xErr := h.service.oauthLogic.TokenSource(ctx, cacheToken, getRT)
+	if xErr != nil {
+		_ = ctx.Error(xErr)
+		return
+	}
+
+	xResult.SuccessHasData(ctx, "刷新令牌成功", newToken)
+}
